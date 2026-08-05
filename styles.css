@@ -1,0 +1,170 @@
+:root{
+  --bg:#101216;
+  --panel:#171a20;
+  --panel2:#1d212a;
+  --line:#2a2f3a;
+  --text:#dce2ec;
+  --muted:#8b95a7;
+  --accent:#5ec8f0;
+  --gen:#57d07f;
+  --pre:#5ec8f0;
+  --load:#f0a35e;
+  --ovh:#5a6376;
+  --warn:#f0685e;
+  --sel:#e8d24a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg); color:var(--text);
+  font:13px/1.45 "Inter","Segoe UI",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.hidden{display:none !important}
+code{font-family:ui-monospace,"JetBrains Mono",Consolas,monospace;background:#000a;padding:1px 5px;border-radius:4px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:30;
+  display:flex; align-items:center; gap:10px;
+  padding:8px 14px; background:#0d0f13ee; backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line);
+}
+.brand{font-weight:700; letter-spacing:.5px}
+.brand span{color:var(--muted); font-weight:400}
+.spacer{flex:1}
+.runs{display:flex; gap:6px; flex-wrap:wrap; max-width:60%}
+.run-tab{
+  display:inline-flex; align-items:center; gap:6px;
+  padding:4px 6px 4px 10px; border:1px solid var(--line); border-radius:999px;
+  background:var(--panel); color:var(--muted); cursor:grab; font-size:12px; user-select:none;
+}
+.run-tab .lbl{max-width:230px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.run-tab .x{
+  width:15px; height:15px; line-height:14px; text-align:center; border-radius:50%;
+  font-size:13px; color:inherit; opacity:.55; cursor:pointer; flex:none;
+}
+.run-tab .x:hover{opacity:1; background:#ffffff26}
+.run-tab:hover{color:var(--text); border-color:#3a4252}
+.run-tab.active{color:#0c1116; background:var(--accent); border-color:var(--accent); font-weight:600}
+.run-tab.active .x:hover{background:#0c111633}
+.run-tab.dragging{opacity:.4}
+.run-tab.dropL{box-shadow:inset 3px 0 0 var(--sel)}
+.run-tab.dropR{box-shadow:inset -3px 0 0 var(--sel)}
+.btn{
+  padding:5px 11px; border:1px solid var(--line); border-radius:7px;
+  background:var(--panel); color:var(--text); cursor:pointer; font-size:12px;
+}
+.btn:hover{border-color:#46506a; background:var(--panel2)}
+.btn.ghost{padding:5px 9px; color:var(--muted)}
+
+.banner{margin:10px 14px; padding:8px 12px; border-radius:8px;
+  background:#3a1c1c; border:1px solid #6b2b2b; color:#ffd9d4; font-size:12px}
+
+/* ---------- layout ---------- */
+main{padding:12px 14px 40px; display:flex; flex-direction:column; gap:12px}
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:10px 12px 12px}
+.panel.two{display:grid; grid-template-columns:1fr 1fr; gap:18px}
+@media (max-width:900px){.panel.two{grid-template-columns:1fr}}
+.panel-head{display:flex; align-items:center; gap:8px; margin:0 0 8px}
+.cards-panel{background:none; border:0; padding:0}
+.cards-panel .panel-head{margin:0 2px 6px}
+.panel-head h2{margin:0; font-size:13px; font-weight:600; letter-spacing:.3px}
+.hint,.muted{color:var(--muted); font-weight:400}
+.hint{font-size:11px}
+.small{font-size:11px}
+.controls{margin-left:auto; display:flex; gap:14px; align-items:center}
+.chk{color:var(--muted); font-size:11px; display:flex; align-items:center; gap:5px; cursor:pointer; user-select:none}
+.chk input{accent-color:var(--accent)}
+
+/* ---------- cards ---------- */
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(162px,1fr)); gap:8px}
+.card{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:8px 11px}
+.card .k{color:var(--muted); font-size:10.5px; text-transform:uppercase; letter-spacing:.6px}
+.card .v{font-size:19px; font-weight:600; margin-top:2px; font-variant-numeric:tabular-nums;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.card .v.txt{font-size:13.5px; font-weight:500}
+.card .v small{font-size:11px; color:var(--muted); font-weight:400; margin-left:3px}
+
+/* ---------- charts ---------- */
+.chart{margin-top:6px}
+.chart-head{display:flex; align-items:center; gap:7px; padding:2px 2px 3px}
+.chart-head .ttl{font-size:11.5px; color:#aeb8c9; font-weight:600}
+.chart-head .val{margin-left:auto; font-size:11.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+.canvas-wrap{position:relative; height:210px}
+.canvas-wrap.mini{height:70px}
+.canvas-wrap.axis{height:24px}
+.canvas-wrap.h100{height:100px}
+.canvas-wrap.h120{height:120px}
+.canvas-wrap.h140{height:140px}
+.canvas-wrap.h150{height:150px}
+/* курсор ставится из JS: crosshair только над областью построения, иначе default */
+canvas{display:block; width:100%; height:100%; cursor:default}
+
+.legend{display:flex; gap:14px; flex-wrap:wrap; margin-left:auto; font-size:11px; color:var(--muted)}
+.legend.big{margin:8px 2px 0}
+.legend i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px}
+
+/* ---------- tables ---------- */
+table{border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums}
+.kv td{padding:3px 6px; border-bottom:1px solid #21262f; font-size:12px}
+.kv td:first-child{color:var(--muted); width:52%}
+.kv td:last-child{text-align:right}
+.scroll-x{overflow:auto; max-height:380px}
+.grid th,.grid td{padding:4px 8px; font-size:11.5px; text-align:right; border-bottom:1px solid #21262f; white-space:nowrap}
+.grid th{position:sticky; top:0; background:var(--panel2); color:var(--muted); font-weight:600; z-index:1; cursor:pointer}
+.grid th:first-child,.grid td:first-child{text-align:left}
+.grid tbody tr:hover{background:#222836}
+.grid tbody tr.sel{background:#2c3446; outline:1px solid var(--sel)}
+.grid tbody tr{cursor:pointer}
+.grid tr.active td{color:var(--accent)}
+
+/* ---------- dropzone / tooltip / modal ---------- */
+.dropzone{position:fixed; inset:0; display:grid; place-items:center; background:var(--bg); z-index:20; padding:20px}
+.dropzone.drag{background:#101a22; outline:2px dashed var(--accent); outline-offset:-16px}
+.dz-inner{max-width:640px; text-align:center}
+.dz-inner h1{font-size:22px; margin:0 0 10px}
+.dz-inner p{color:#b7c0cf; margin:6px 0}
+.dropzone.over-main{position:fixed; background:#101a22cc}
+
+.tooltip{
+  position:fixed; z-index:50; pointer-events:none; max-width:390px;
+  background:#0b0e13f2; border:1px solid #39424f; border-radius:8px;
+  padding:8px 10px; font-size:11.5px; line-height:1.5;
+  box-shadow:0 8px 26px #000a; font-variant-numeric:tabular-nums;
+}
+.tooltip b{color:#fff}
+.tooltip .row{display:flex; justify-content:space-between; gap:14px}
+.tooltip .row span:first-child{color:var(--muted)}
+.tooltip hr{border:0; border-top:1px solid #262d38; margin:5px 0}
+.tooltip .ph{display:inline-block; width:8px; height:8px; border-radius:2px; margin-right:5px}
+.tooltip .list{max-height:190px; overflow:hidden}
+
+/* ---------- справка по блокам ---------- */
+.qm{
+  flex:none; width:16px; height:16px; padding:0; line-height:14px; text-align:center;
+  border:1px solid var(--line); border-radius:50%; background:var(--panel2);
+  color:var(--muted); font-size:11px; font-family:inherit; cursor:pointer;
+}
+.qm:hover{color:var(--accent); border-color:var(--accent)}
+.qm.on{background:var(--accent); border-color:var(--accent); color:#0c1116}
+.btn.ghost.qm{width:22px; height:22px; line-height:20px; border-radius:50%; font-size:12px}
+.qm-demo{display:inline-block; width:15px; height:15px; line-height:14px; text-align:center; font-size:10px;
+  border:1px solid var(--line); border-radius:50%; color:var(--muted)}
+
+.pop{
+  position:fixed; z-index:70; width:min(560px,calc(100vw - 24px)); max-height:64vh; overflow:auto;
+  background:#0e1117f7; border:1px solid #3d4756; border-radius:10px; padding:11px 14px 13px;
+  box-shadow:0 14px 44px #000b; font-size:12px; line-height:1.55; backdrop-filter:blur(3px);
+}
+.pop h3{font-size:12px; margin:11px 0 4px; color:var(--accent); font-weight:600}
+.pop h3:first-child{margin-top:0}
+.pop p{color:#b7c0cf; margin:5px 0}
+.pop ul{margin:4px 0; padding-left:17px; color:#c6cfdc}
+.pop li{margin:3px 0}
+.pop code{font-size:11px}
+.pop .pop-close{position:absolute; top:6px; right:8px; border:0; background:none; color:var(--muted);
+  font-size:15px; line-height:1; cursor:pointer; padding:2px 4px}
+.pop .pop-close:hover{color:var(--text)}
+.pop .pop-hint{display:block; margin-top:9px; padding-top:7px; border-top:1px solid #262d38;
+  color:var(--muted); font-size:11px}
