@@ -30,6 +30,20 @@ code{font-family:ui-monospace,"JetBrains Mono",Consolas,monospace;background:#00
   padding:8px 14px; background:#0d0f13ee; backdrop-filter:blur(6px);
   border-bottom:1px solid var(--line);
 }
+
+/* ---------- view tabs ---------- */
+.view-tabs{
+  display:flex; gap:4px; padding:10px 14px 0;
+  border-bottom:1px solid var(--line);
+}
+.view-tab{
+  background:transparent; border:none; color:var(--muted);
+  padding:8px 16px; cursor:pointer; font:inherit; font-weight:500;
+  border-bottom:2px solid transparent; transition:all 0.2s;
+}
+.view-tab:hover{color:var(--text); background:var(--panel2)}
+.view-tab.active{color:var(--accent); border-bottom-color:var(--accent)}
+.view-content{padding:0}
 .brand{font-weight:700; letter-spacing:.5px}
 .brand span{color:var(--muted); font-weight:400}
 .spacer{flex:1}

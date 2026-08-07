@@ -268,6 +268,7 @@ const S = {
   drag: null,
   dragTab: null,        // индекс перетаскиваемой вкладки отчёта
   popAnchor: null,      // кнопка «?», для которой открыта справка
+  activeView: 'summary', // активная вкладка: 'summary' или 'details'
 };
 const run = () => (S.active >= 0 ? S.runs[S.active] : null);
 const span = () => S.view.b - S.view.a;
@@ -854,8 +855,6 @@ function drawMini() {
   ctx.fillRect(pl, 3, xa - pl, ph); ctx.fillRect(xb, 3, pl + pw - xb, ph);
   ctx.strokeStyle = CLR.cur; ctx.lineWidth = 1;
   ctx.strokeRect(Math.round(xa) + 0.5, 3.5, Math.max(1, Math.round(xb - xa)), ph - 1);
-  ctx.fillStyle = CLR.text; ctx.font = '10px ui-sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
-  ctx.fillText('весь запуск', pl - 7, H / 2);
   if (S.cursor !== null) {
     ctx.strokeStyle = CLR.cur + '99'; ctx.beginPath();
     const cx = Math.round(x(clamp(S.cursor, 0, r.wall))) + 0.5;
@@ -924,7 +923,7 @@ function renderRunTabs() {
     b.append(lbl, x);
 
     x.onclick = (e) => { e.stopPropagation(); closeRun(i); };
-    b.onclick = () => { if (i !== S.active) setActive(i); };
+    b.onclick = () => { if (i !== S.active) setActive(i, true); }; // keepView = true - сохраняем вкладку
 
     b.ondragstart = (e) => {
       S.dragTab = i;
@@ -954,7 +953,7 @@ function renderRunTabs() {
   });
   $('#btnCloseAll').hidden = S.runs.length === 0;
   $('#cmpPanel').classList.toggle('hidden', S.runs.length < 2);
-  $('#statsPanel').classList.toggle('hidden', S.runs.length < 2);
+  $('#statsPanelSummary').classList.toggle('hidden', S.runs.length < 2);
 }
 
 /** перенести отчёт from на позицию рядом с i (after — справа от него) */
@@ -978,7 +977,7 @@ function closeRun(i) {
   S.runs.splice(i, 1);
   hideTip();
   if (!S.runs.length) { showEmpty(); return; }
-  if (wasActive) setActive(Math.min(i, S.runs.length - 1));
+  if (wasActive) setActive(Math.min(i, S.runs.length - 1), true); // keepView = true - сохраняем вкладку
   else { S.active = S.runs.indexOf(cur); renderRunTabs(); renderCompare(); }
 }
 
@@ -1124,7 +1123,7 @@ function renderCompare() {
     '<thead><tr>' + cols.map(([t]) => `<th>${t}</th>`).join('') + '</tr></thead><tbody>' +
     S.runs.map((r, i) => `<tr class="${i === S.active ? 'active' : ''}" data-i="${i}">` +
       cols.map(([, f]) => `<td>${f(r)}</td>`).join('') + '</tr>').join('') + '</tbody>';
-  $('#tblCompare').querySelectorAll('tbody tr').forEach((tr) => (tr.onclick = () => setActive(+tr.dataset.i)));
+  $('#tblCompare').querySelectorAll('tbody tr').forEach((tr) => (tr.onclick = () => setActive(+tr.dataset.i, true))); // keepView = true
 }
 
 function renderLegends() {
@@ -1413,7 +1412,7 @@ function attachPanZoom(c) {
 function attachMini(c) {
   const cv = c.canvas;
   const tAt = (ev) => { const rect = cv.getBoundingClientRect(); return c.miniInv ? c.miniInv(ev.clientX - rect.left) : 0; };
-  // полоса обзора занимает не всю ширину: слева подпись «весь запуск»
+  // полоса обзора занимает всю ширину графика
   const inBand = (ev) => {
     const rect = cv.getBoundingClientRect();
     const px = ev.clientX - rect.left;
@@ -1479,8 +1478,15 @@ function drawCharts() {
 }
 function drawStaticCharts() {
   const r = run(); if (!r) return;
+  // рисуем только графики для активной вкладки
+  const suffix = S.activeView === 'summary' ? 'Summary' : '';
   for (const c of charts) {
-    if (c.isStatic) c.render(r);
+    if (!c.isStatic) continue;
+    if (S.activeView === 'summary' && c.key.endsWith('Summary')) {
+      c.render(r);
+    } else if (S.activeView === 'details' && !c.key.endsWith('Summary')) {
+      c.render(r);
+    }
   }
 }
 function refresh() {
@@ -1490,17 +1496,74 @@ function refresh() {
   renderWindowTable(r);
   renderReqTable(r);
 }
-function setActive(i) {
+
+function switchView(view) {
+  S.activeView = view;
+  
+  // переключаем активный класс на табах
+  document.querySelectorAll('.view-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.view === view);
+  });
+  
+  // показываем/скрываем контент
+  $('#viewSummary').classList.toggle('hidden', view !== 'summary');
+  $('#viewDetails').classList.toggle('hidden', view !== 'details');
+  
+  // перерисовываем графики активной вкладки
+  if (view === 'summary') {
+    drawStaticCharts(); // перерисовываем графики Summary
+    renderCompareSummary();
+  } else {
+    const r = run();
+    if (r) refresh();
+  }
+}
+
+function renderCompareSummary() {
+  // копия таблицы сравнения для вкладки Summary
+  $('#tblCompareSummary').innerHTML = $('#tblCompare').innerHTML;
+}
+
+function setActive(i, keepView = false) {
+  // сохраняем view предыдущего отчёта
+  const prevRun = run();
+  if (prevRun && S.activeView === 'details') {
+    prevRun.savedView = { ...S.view };
+  }
+  
   S.active = i; S.sel = null; S.cursor = null;
   const r = run(); if (!r) return;
-  S.view = { a: 0, b: Math.max(r.wall, 0.001) };
+  
+  // восстанавливаем сохранённый view или устанавливаем по умолчанию
+  if (r.savedView && keepView && S.activeView === 'details') {
+    S.view = { ...r.savedView };
+  } else {
+    S.view = { a: 0, b: Math.max(r.wall, 0.001) };
+  }
+  
   _wsCache = { key: '', val: null };
   renderRunTabs(); renderCards(r); renderConfigTable(r); renderCompare(); renderLegends();
   $('#main').classList.remove('hidden');
   $('#dropzone').classList.add('hidden');
-  // показываем/скрываем панель статистики в зависимости от количества отчётов
-  $('#statsPanel').classList.toggle('hidden', S.runs.length < 2);
-  refresh();
+  // показываем/скрываем панель статистики на вкладке "Сводка" в зависимости от количества отчётов
+  $('#statsPanelSummary').classList.toggle('hidden', S.runs.length < 2);
+  
+  // если keepView = true, сохраняем текущую вкладку
+  if (keepView) {
+    // просто обновляем данные на текущей вкладке
+    switchView(S.activeView);
+  } else {
+    // переключаемся на summary если много отчётов, иначе на details (только при первой загрузке)
+    if (S.runs.length >= 2 && S.activeView !== 'summary') {
+      switchView('summary');
+    } else if (S.runs.length === 1) {
+      switchView('details');
+    } else {
+      switchView(S.activeView);
+    }
+  }
+  
+  if (S.activeView === 'details') refresh();
 }
 
 /* ------------------------------ загрузка --------------------------------- */
@@ -1582,19 +1645,24 @@ const axisChart = {
   },
 };
 
+// графики для вкладки "Детали"
 mkChart('gantt', 'cvGantt', 'wrapGantt', drawGantt);
 mkChart('conc', 'cvConc', 'wrapConc', drawConc);
 mkChart('thr', 'cvThr', 'wrapThr', drawThr);
 mkChart('rtps', 'cvRtps', 'wrapRtps', drawRtps);
 mkChart('pre', 'cvPre', 'wrapPre', drawPre);
-// статические графики без привязки к временной оси
-mkChart('gentps', 'cvGenTps', 'wrapGenTps', drawGenTps, { static: true });
-mkChart('partps', 'cvParTps', 'wrapParTps', drawParTps, { static: true });
-mkChart('perthr', 'cvPerThr', 'wrapPerThr', drawPerThr, { static: true });
+// статические графики для вкладки "Сводка"
+mkChart('gentpsSummary', 'cvGenTpsSummary', 'wrapGenTpsSummary', drawGenTps, { static: true });
+mkChart('partpsSummary', 'cvParTpsSummary', 'wrapParTpsSummary', drawParTps, { static: true });
 
 $('#fileInput').addEventListener('change', (e) => loadFiles([...e.target.files]));
 $('#btnReset').addEventListener('click', resetView);
 $('#btnCloseAll').addEventListener('click', closeAll);
+
+// обработчики табов
+document.querySelectorAll('.view-tab').forEach(tab => {
+  tab.addEventListener('click', () => switchView(tab.dataset.view));
+});
 
 
 const bindOpt = (id, key, full) => $(id).addEventListener('change', (e) => {

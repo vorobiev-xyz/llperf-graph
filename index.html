@@ -14,8 +14,8 @@
 
   <div class="spacer"></div>
 
-  <label class="btn" title="Открыть один или несколько json-отчётов">
-    Открыть отчёты…
+  <label class="btn" title="Добавить один или несколько json-отчётов">
+    Добавить отчёт…
     <input type="file" id="fileInput" accept=".json,application/json" multiple hidden>
   </label>
   <button class="btn" id="btnCloseAll" title="Закрыть (выгрузить) все загруженные отчёты" hidden>Закрыть все</button>
@@ -26,6 +26,52 @@
 <div id="banner" class="banner hidden"></div>
 
 <main id="main" class="hidden">
+
+  <nav class="view-tabs">
+    <button class="view-tab active" data-view="summary">Сводка</button>
+    <button class="view-tab" data-view="details">Детали</button>
+  </nav>
+
+  <div id="viewSummary" class="view-content">
+    <!-- Содержимое вкладки "Сводка" -->
+    
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Сравнение запусков</h2>
+        <button class="qm" data-help="compare" title="Что в столбцах">?</button>
+      </div>
+      <div class="scroll-x"><table class="grid" id="tblCompareSummary"></table></div>
+    </section>
+
+    <section class="panel" id="statsPanelSummary">
+      <div class="panel-head">
+        <h2>Статистическое сравнение</h2>
+        <button class="qm" data-help="stats" title="Как читать графики-поплавки">?</button>
+      </div>
+
+      <div class="chart" data-chart="gentps">
+        <div class="chart-head">
+          <span class="ttl">Генерация токенов в замере, ток/с</span>
+          <button class="qm" data-help="gentps" title="Что здесь показано">?</button>
+          <span class="val" data-val="gentps"></span>
+        </div>
+        <div class="canvas-wrap h300" id="wrapGenTpsSummary"><canvas id="cvGenTpsSummary"></canvas></div>
+      </div>
+
+      <div class="chart" data-chart="partps">
+        <div class="chart-head">
+          <span class="ttl">Общая параллельная генерация, ток/с</span>
+          <button class="qm" data-help="partps" title="Что здесь показано">?</button>
+          <span class="val" data-val="partps"></span>
+        </div>
+        <div class="canvas-wrap h300" id="wrapParTpsSummary"><canvas id="cvParTpsSummary"></canvas></div>
+      </div>
+    </section>
+
+  </div>
+
+  <div id="viewDetails" class="view-content hidden">
+    <!-- Содержимое вкладки "Детали" (текущие графики и таблицы) -->
 
   <section class="panel cards-panel">
     <div class="panel-head">
@@ -131,41 +177,6 @@
     <div class="scroll-x"><table class="grid" id="tblCompare"></table></div>
   </section>
 
-  <section class="panel" id="statsPanel">
-    <div class="panel-head">
-      <h2>Статистическое сравнение запусков</h2>
-      <button class="qm" data-help="stats" title="Как читать графики-поплавки">?</button>
-      <span class="hint">Box plot (ящики с усами) для сравнения производительности всех загруженных отчётов</span>
-    </div>
-
-    <div class="chart" data-chart="gentps">
-      <div class="chart-head">
-        <span class="ttl">Генерация токенов в замере, ток/с</span>
-        <button class="qm" data-help="gentps" title="Что здесь показано">?</button>
-        <span class="val" data-val="gentps"></span>
-      </div>
-      <div class="canvas-wrap h300" id="wrapGenTps"><canvas id="cvGenTps"></canvas></div>
-    </div>
-
-    <div class="chart" data-chart="partps">
-      <div class="chart-head">
-        <span class="ttl">Общая параллельная генерация, ток/с</span>
-        <button class="qm" data-help="partps" title="Что здесь показано">?</button>
-        <span class="val" data-val="partps"></span>
-      </div>
-      <div class="canvas-wrap h300" id="wrapParTps"><canvas id="cvParTps"></canvas></div>
-    </div>
-
-    <div class="chart" data-chart="perthr">
-      <div class="chart-head">
-        <span class="ttl">Удельная генерация на поток, ток/с</span>
-        <button class="qm" data-help="perthr" title="Что здесь показано">?</button>
-        <span class="val" data-val="perthr"></span>
-      </div>
-      <div class="canvas-wrap h300" id="wrapPerThr"><canvas id="cvPerThr"></canvas></div>
-    </div>
-  </section>
-
   <section class="panel">
     <div class="panel-head">
       <h2>Запросы</h2>
@@ -174,6 +185,11 @@
     </div>
     <div class="scroll-x"><table class="grid" id="tblReqs"></table></div>
   </section>
+
+  </div><!-- end viewDetails -->
+
+  </div><!-- end viewSummary -->
+
 </main>
 
 <section id="dropzone" class="dropzone">
