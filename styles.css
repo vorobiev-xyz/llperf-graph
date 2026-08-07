@@ -98,6 +98,9 @@ main{padding:12px 14px 40px; display:flex; flex-direction:column; gap:12px}
 .canvas-wrap.h120{height:120px}
 .canvas-wrap.h140{height:140px}
 .canvas-wrap.h150{height:150px}
+.canvas-wrap.h200{height:200px}
+.canvas-wrap.h250{height:250px}
+.canvas-wrap.h300{height:300px}
 /* курсор ставится из JS: crosshair только над областью построения, иначе default */
 canvas{display:block; width:100%; height:100%; cursor:default}
 

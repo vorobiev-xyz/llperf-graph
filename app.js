@@ -17,6 +17,12 @@ const CLR = {
   band: '#57d07f',
 };
 const PHASE_RU = { load: 'загрузка модели', pre: 'prefill', gen: 'генерация', ovh: 'накладные' };
+// Палитра для разных отчётов на сравнительных графиках
+const REPORT_COLORS = [
+  '#57d07f', '#5ec8f0', '#f0a35e', '#e85d75', '#9b6bdf', 
+  '#4ecdc4', '#ff9f43', '#5f27cd', '#00d2d3', '#ff6348',
+  '#a5b1c2', '#48dbfb', '#feca57', '#ee5a6f', '#c8d6e5'
+];
 
 /* ----------------------------- утилиты ----------------------------------- */
 const $  = (s) => document.querySelector(s);
@@ -270,10 +276,11 @@ const span = () => S.view.b - S.view.a;
 const PAD = { l: 58, r: 14, t: 8, b: 6 };
 const charts = [];
 
-function mkChart(key, cvId, wrapId, draw) {
+function mkChart(key, cvId, wrapId, draw, options = {}) {
   const canvas = $('#' + cvId), wrap = $('#' + wrapId);
+  const isStatic = options.static || false; // статические графики без привязки к времени
   const c = {
-    key, canvas, wrap, ctx: canvas.getContext('2d'), draw,
+    key, canvas, wrap, ctx: canvas.getContext('2d'), draw, isStatic,
     g: null,
     resize() {
       const dpr = window.devicePixelRatio || 1;
@@ -283,7 +290,11 @@ function mkChart(key, cvId, wrapId, draw) {
       this.W = w; this.H = h;
     },
     geom() {
-      const pl = PAD.l, pt = PAD.t, pw = Math.max(10, this.W - PAD.l - PAD.r), ph = Math.max(10, this.H - PAD.t - PAD.b);
+      const pl = PAD.l, pt = PAD.t;
+      // для статических графиков увеличиваем нижний отступ для легенды
+      const pb = isStatic ? 90 : PAD.b;
+      const pw = Math.max(10, this.W - PAD.l - PAD.r);
+      const ph = Math.max(10, this.H - PAD.t - pb);
       const a = S.view.a, sp = S.view.b - a;
       return {
         pl, pt, pw, ph, a, b: S.view.b, sp,
@@ -297,10 +308,15 @@ function mkChart(key, cvId, wrapId, draw) {
       const ctx = this.ctx, g = this.geom(); this.g = g;
       ctx.clearRect(0, 0, this.W, this.H);
       this.draw(ctx, g, r, this);
-      drawCursor(ctx, g, this.H);
+      if (!isStatic) drawCursor(ctx, g, this.H);
     },
   };
-  attachPanZoom(c);
+  if (!isStatic) {
+    attachPanZoom(c);
+  } else {
+    // для статических графиков добавляем обработку наведения для tooltip
+    attachStaticHover(c);
+  }
   charts.push(c);
   return c;
 }
@@ -514,6 +530,276 @@ function drawPre(ctx, g, r) {
   ctx.fillText('пик в окне ' + num(peak, 0) + ' ток/с', g.pl + g.pw - 3, g.pt + 9);
 }
 
+/* --- утилиты для статистики --- */
+function calcStats(values) {
+  if (!values.length) return { min: 0, q1: 0, median: 0, q3: 0, max: 0, mean: 0, outliers: [] };
+  const sorted = values.slice().sort((a, b) => a - b);
+  const n = sorted.length;
+  const mean = values.reduce((a, b) => a + b, 0) / n;
+  const q1 = sorted[Math.floor(n * 0.25)];
+  const median = n % 2 ? sorted[Math.floor(n / 2)] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
+  const q3 = sorted[Math.floor(n * 0.75)];
+  const iqr = q3 - q1;
+  const lowerFence = q1 - 1.5 * iqr;
+  const upperFence = q3 + 1.5 * iqr;
+  const outliers = sorted.filter(v => v < lowerFence || v > upperFence);
+  const min = sorted.find(v => v >= lowerFence) || sorted[0];
+  const max = [...sorted].reverse().find(v => v <= upperFence) || sorted[n - 1];
+  return { min, q1, median, q3, max, mean, outliers };
+}
+
+// Определение элемента box plot под курсором
+function hitTestBoxPlot(hitAreas, px, py) {
+  if (!hitAreas) return null;
+  
+  for (const area of hitAreas) {
+    // проверка выбросов (точки)
+    for (const outlier of area.outliers) {
+      const dx = px - outlier.x, dy = py - outlier.y;
+      if (dx * dx + dy * dy <= (outlier.r + 3) * (outlier.r + 3)) {
+        return { type: 'outlier', area, value: outlier.value };
+      }
+    }
+    
+    // проверка среднего (красный ромбик)
+    const dmx = px - area.mean.x, dmy = py - area.mean.y;
+    if (dmx * dmx + dmy * dmy <= (area.mean.r + 3) * (area.mean.r + 3)) {
+      return { type: 'mean', area };
+    }
+    
+    // проверка усов
+    if (Math.abs(px - area.whiskerTop.x) <= 5 && py >= area.whiskerTop.y1 && py <= area.whiskerTop.y2) {
+      return { type: 'whisker', area, part: 'top' };
+    }
+    if (Math.abs(px - area.whiskerBot.x) <= 5 && py >= area.whiskerBot.y1 && py <= area.whiskerBot.y2) {
+      return { type: 'whisker', area, part: 'bottom' };
+    }
+    
+    // проверка ящика
+    if (px >= area.box.x1 && px <= area.box.x2 && py >= area.box.y1 && py <= area.box.y2) {
+      return { type: 'box', area };
+    }
+  }
+  
+  return null;
+}
+
+// Отрисовка одного box plot (возвращает границы для hit-testing)
+function drawSingleBoxPlot(ctx, g, stats, yMax, cx, boxW, color, idx) {
+  const y = (v) => g.y(v, yMax);
+  
+  // усы
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(cx, y(stats.min)); ctx.lineTo(cx, y(stats.q1));
+  ctx.moveTo(cx, y(stats.q3)); ctx.lineTo(cx, y(stats.max));
+  ctx.stroke();
+  
+  // заглушки усов
+  ctx.beginPath();
+  ctx.moveTo(cx - 8, y(stats.min)); ctx.lineTo(cx + 8, y(stats.min));
+  ctx.moveTo(cx - 8, y(stats.max)); ctx.lineTo(cx + 8, y(stats.max));
+  ctx.stroke();
+  
+  // ящик
+  ctx.fillStyle = color + '40';
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  const boxH = y(stats.q1) - y(stats.q3);
+  ctx.fillRect(cx - boxW / 2, y(stats.q3), boxW, boxH);
+  ctx.strokeRect(cx - boxW / 2, y(stats.q3), boxW, boxH);
+  
+  // медиана
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(cx - boxW / 2, y(stats.median));
+  ctx.lineTo(cx + boxW / 2, y(stats.median));
+  ctx.stroke();
+  
+  // среднее
+  ctx.fillStyle = '#ff4444';
+  ctx.beginPath();
+  ctx.arc(cx, y(stats.mean), 4, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // выбросы
+  ctx.fillStyle = color + 'aa';
+  for (const v of stats.outliers) {
+    ctx.beginPath();
+    ctx.arc(cx, y(v), 2.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  // возвращаем границы для hit-testing
+  return {
+    idx, stats, color,
+    box: { x1: cx - boxW / 2, x2: cx + boxW / 2, y1: y(stats.q3), y2: y(stats.q1) },
+    whiskerTop: { x: cx, y1: y(stats.max), y2: y(stats.q3) },
+    whiskerBot: { x: cx, y1: y(stats.q1), y2: y(stats.min) },
+    mean: { x: cx, y: y(stats.mean), r: 4 },
+    outliers: stats.outliers.map(v => ({ x: cx, y: y(v), r: 2.5, value: v }))
+  };
+}
+
+// Отрисовка нескольких box plot для сравнения отчётов
+function drawMultiBoxPlot(ctx, g, dataList, yMax, chart) {
+  const n = dataList.length;
+  if (!n) return;
+  
+  const totalW = g.pw * 0.7;
+  const boxW = Math.min(80, totalW / n - 10);
+  const spacing = totalW / n;
+  const startX = g.pl + (g.pw - totalW) / 2 + spacing / 2;
+  
+  const hitAreas = [];
+  for (let i = 0; i < n; i++) {
+    const { stats, color, label } = dataList[i];
+    const cx = startX + i * spacing;
+    const area = drawSingleBoxPlot(ctx, g, stats, yMax, cx, boxW, color, i);
+    area.label = label;
+    hitAreas.push(area);
+  }
+  
+  // сохраняем hitAreas для обработки событий мыши
+  if (chart) chart.hitAreas = hitAreas;
+  
+  // легенда под графиком - рассчитываем необходимое количество строк
+  const legendItemW = 220; // фиксированная ширина элемента легенды
+  const cols = Math.max(1, Math.floor(g.pw / legendItemW));
+  const rows = Math.ceil(n / cols);
+  const legendRowHeight = 18;
+  const legendStartY = g.pt + g.ph + 12;
+  
+  ctx.font = '10px ui-sans-serif';
+  ctx.textAlign = 'left';
+  
+  for (let i = 0; i < n; i++) {
+    const { color, label } = dataList[i];
+    const col = i % cols;
+    const row = Math.floor(i / cols);
+    const x = g.pl + col * legendItemW;
+    const y = legendStartY + row * legendRowHeight;
+    
+    // цветной квадратик
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y - 7, 12, 12);
+    
+    // название отчёта (полное, без обрезки)
+    ctx.fillStyle = CLR.text;
+    ctx.fillText(label, x + 16, y);
+  }
+}
+
+/* --- 6. генерация токенов в замере (box plot для всех отчётов) --- */
+function drawGenTps(ctx, g, r, chart) {
+  const dataList = [];
+  let globalMax = 0;
+  
+  // собираем данные по всем загруженным отчётам в порядке S.runs (порядок вкладок)
+  for (let i = 0; i < S.runs.length; i++) {
+    const run = S.runs[i];
+    // используем весь временной диапазон отчёта, не зависим от окна просмотра
+    const values = run.reqs
+      .filter(q => q.genTps > 0)
+      .map(q => q.genTps);
+    
+    if (values.length) {
+      const stats = calcStats(values);
+      const color = REPORT_COLORS[i % REPORT_COLORS.length];
+      const label = run.name;
+      dataList.push({ stats, color, label, count: values.length });
+      if (stats.max > globalMax) globalMax = stats.max;
+    }
+  }
+  
+  if (!dataList.length) {
+    ctx.fillStyle = CLR.text; ctx.font = '12px ui-sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('нет данных', g.pl + g.pw / 2, g.pt + g.ph / 2);
+    return;
+  }
+  
+  const nt = niceTicks(Math.max(1, globalMax * 1.1), Math.max(2, Math.floor(g.ph / 26)));
+  frame(ctx, g, nt.ticks, nt.max);
+  drawMultiBoxPlot(ctx, g, dataList, nt.max, chart);
+}
+
+/* --- 7. общая параллельная генерация токенов (box plot для всех отчётов) --- */
+function drawParTps(ctx, g, r, chart) {
+  const dataList = [];
+  let globalMax = 0;
+  const pw = 1000; // фиксированная детализация, не зависит от ширины окна
+  
+  // собираем данные по всем загруженным отчётам в порядке S.runs (порядок вкладок)
+  for (let i = 0; i < S.runs.length; i++) {
+    const run = S.runs[i];
+    // используем весь временной диапазон отчёта
+    const a = columnAgg(run.bpRate, 'gen', 0, run.wall, pw);
+    const values = [];
+    for (let c = 0; c < pw; c++) {
+      if (a.mx[c] > 0) values.push(a.mx[c]);
+    }
+    
+    if (values.length) {
+      const stats = calcStats(values);
+      const color = REPORT_COLORS[i % REPORT_COLORS.length];
+      const label = run.name;
+      dataList.push({ stats, color, label, count: values.length });
+      if (stats.max > globalMax) globalMax = stats.max;
+    }
+  }
+  
+  if (!dataList.length) {
+    ctx.fillStyle = CLR.text; ctx.font = '12px ui-sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('нет данных', g.pl + g.pw / 2, g.pt + g.ph / 2);
+    return;
+  }
+  
+  const nt = niceTicks(Math.max(1, globalMax * 1.1), Math.max(2, Math.floor(g.ph / 26)));
+  frame(ctx, g, nt.ticks, nt.max);
+  drawMultiBoxPlot(ctx, g, dataList, nt.max, chart);
+}
+
+/* --- 8. удельная генерация на поток (box plot для всех отчётов) --- */
+function drawPerThr(ctx, g, r, chart) {
+  const dataList = [];
+  let globalMax = 0;
+  const pw = 1000; // фиксированная детализация
+  
+  // собираем данные по всем загруженным отчётам в порядке S.runs (порядок вкладок)
+  for (let i = 0; i < S.runs.length; i++) {
+    const run = S.runs[i];
+    // используем весь временной диапазон отчёта
+    const rate = columnAgg(run.bpRate, 'gen', 0, run.wall, pw);
+    const threads = columnAgg(run.bpConc, 'gen', 0, run.wall, pw);
+    const values = [];
+    for (let c = 0; c < pw; c++) {
+      if (threads.mx[c] > 0) {
+        values.push(rate.mx[c] / threads.mx[c]);
+      }
+    }
+    
+    if (values.length) {
+      const stats = calcStats(values);
+      const color = REPORT_COLORS[i % REPORT_COLORS.length];
+      const label = run.name;
+      dataList.push({ stats, color, label, count: values.length });
+      if (stats.max > globalMax) globalMax = stats.max;
+    }
+  }
+  
+  if (!dataList.length) {
+    ctx.fillStyle = CLR.text; ctx.font = '12px ui-sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('нет данных', g.pl + g.pw / 2, g.pt + g.ph / 2);
+    return;
+  }
+  
+  const nt = niceTicks(Math.max(1, globalMax * 1.1), Math.max(2, Math.floor(g.ph / 26)));
+  frame(ctx, g, nt.ticks, nt.max);
+  drawMultiBoxPlot(ctx, g, dataList, nt.max, chart);
+}
+
 /* --- ось времени --- */
 function drawAxis() {
   const c = axisChart, r = run(); if (!r) return;
@@ -668,6 +954,7 @@ function renderRunTabs() {
   });
   $('#btnCloseAll').hidden = S.runs.length === 0;
   $('#cmpPanel').classList.toggle('hidden', S.runs.length < 2);
+  $('#statsPanel').classList.toggle('hidden', S.runs.length < 2);
 }
 
 /** перенести отчёт from на позицию рядом с i (after — справа от него) */
@@ -680,6 +967,8 @@ function moveRun(from, i, after) {
   S.runs.splice(clamp(to, 0, S.runs.length), 0, r);
   S.active = S.runs.indexOf(cur);
   renderRunTabs(); renderCompare();
+  // перерисовываем статические графики при изменении порядка
+  drawStaticCharts();
 }
 
 /** выгрузить один отчёт */
@@ -858,6 +1147,12 @@ function updateHeads(r) {
     set('thr', `в окне: ${num(w.aggTps, 1)} ток/с · ${int(w.gTok)} токенов`);
     set('rtps', `в окне: ${num(w.perReqTps, 2)} ток/с на запрос`);
     set('pre', `в окне: ${int(w.pTok)} токенов промпта за ${fmtDur(w.preTime)}`);
+    
+    // статистика для box plot графиков (для всех отчётов)
+    const totalReports = S.runs.length;
+    set('gentps', `сравнение ${totalReports} отчёт${totalReports === 1 ? 'а' : totalReports < 5 ? 'ов' : 'ов'} по скорости генерации на запрос`);
+    set('partps', `сравнение ${totalReports} отчёт${totalReports === 1 ? 'а' : totalReports < 5 ? 'ов' : 'ов'} по суммарной параллельной генерации`);
+    set('perthr', `сравнение ${totalReports} отчёт${totalReports === 1 ? 'а' : totalReports < 5 ? 'ов' : 'ов'} по удельной скорости на поток`);
     return;
   }
   const c = { act: stepAt(r.bpConc, t, 'act'), gen: stepAt(r.bpConc, t, 'gen'), pre: stepAt(r.bpConc, t, 'pre'), load: stepAt(r.bpConc, t, 'load') };
@@ -868,6 +1163,7 @@ function updateHeads(r) {
   set('thr', `${tl} → ${num(rate, 1)} ток/с`);
   set('rtps', `${tl} → ${c.gen ? num(rate / c.gen, 2) : '0'} ток/с на активный запрос`);
   set('pre', `${tl} → ${num(prate, 0)} ток/с`);
+  // статические графики не меняют заголовки при наведении курсора
 }
 
 /* ------------------------------- тултип ---------------------------------- */
@@ -1007,6 +1303,58 @@ function plotPos(c, ev) {
   return { px, py };
 }
 
+function attachStaticHover(c) {
+  const cv = c.canvas;
+  
+  cv.addEventListener('mousemove', (ev) => {
+    if (!c.hitAreas || !c.g) return;
+    const rect = cv.getBoundingClientRect();
+    const px = ev.clientX - rect.left;
+    const py = ev.clientY - rect.top;
+    
+    const hit = hitTestBoxPlot(c.hitAreas, px, py);
+    
+    if (!hit) {
+      cv.style.cursor = 'default';
+      hideTip();
+      return;
+    }
+    
+    cv.style.cursor = 'pointer';
+    
+    // формируем содержимое подсказки
+    let html = `<b>${hit.area.label}</b><hr>`;
+    
+    if (hit.type === 'outlier') {
+      html += `<div class="row"><span>Выброс</span><span><b>${num(hit.value, 2)}</b></span></div>`;
+    } else if (hit.type === 'mean') {
+      html += `<div class="row"><span>Среднее (μ)</span><span><b>${num(hit.area.stats.mean, 2)}</b></span></div>`;
+    } else if (hit.type === 'whisker') {
+      const val = hit.part === 'top' ? hit.area.stats.max : hit.area.stats.min;
+      const label = hit.part === 'top' ? 'Максимум' : 'Минимум';
+      html += `<div class="row"><span>${label}</span><span><b>${num(val, 2)}</b></span></div>`;
+    } else if (hit.type === 'box') {
+      const s = hit.area.stats;
+      html += `<div class="row"><span>Максимум</span><span>${num(s.max, 2)}</span></div>`;
+      html += `<div class="row"><span>Q3 (75%)</span><span>${num(s.q3, 2)}</span></div>`;
+      html += `<div class="row"><span>Медиана (Q2)</span><span><b>${num(s.median, 2)}</b></span></div>`;
+      html += `<div class="row"><span>Среднее (μ)</span><span><b style="color:#ff4444">${num(s.mean, 2)}</b></span></div>`;
+      html += `<div class="row"><span>Q1 (25%)</span><span>${num(s.q1, 2)}</span></div>`;
+      html += `<div class="row"><span>Минимум</span><span>${num(s.min, 2)}</span></div>`;
+      if (s.outliers.length) {
+        html += `<div class="row"><span>Выбросов</span><span>${s.outliers.length}</span></div>`;
+      }
+    }
+    
+    showTip(ev, html);
+  });
+  
+  cv.addEventListener('mouseleave', () => {
+    cv.style.cursor = 'default';
+    hideTip();
+  });
+}
+
 function attachPanZoom(c) {
   const cv = c.canvas;
   // масштабирование колесом — только над самим графиком; над подписями осей страница скроллится
@@ -1129,6 +1477,12 @@ function drawCharts() {
   drawAxis();
   drawMini();
 }
+function drawStaticCharts() {
+  const r = run(); if (!r) return;
+  for (const c of charts) {
+    if (c.isStatic) c.render(r);
+  }
+}
 function refresh() {
   const r = run(); if (!r) return;
   drawCharts();
@@ -1144,6 +1498,8 @@ function setActive(i) {
   renderRunTabs(); renderCards(r); renderConfigTable(r); renderCompare(); renderLegends();
   $('#main').classList.remove('hidden');
   $('#dropzone').classList.add('hidden');
+  // показываем/скрываем панель статистики в зависимости от количества отчётов
+  $('#statsPanel').classList.toggle('hidden', S.runs.length < 2);
   refresh();
 }
 
@@ -1231,6 +1587,10 @@ mkChart('conc', 'cvConc', 'wrapConc', drawConc);
 mkChart('thr', 'cvThr', 'wrapThr', drawThr);
 mkChart('rtps', 'cvRtps', 'wrapRtps', drawRtps);
 mkChart('pre', 'cvPre', 'wrapPre', drawPre);
+// статические графики без привязки к временной оси
+mkChart('gentps', 'cvGenTps', 'wrapGenTps', drawGenTps, { static: true });
+mkChart('partps', 'cvParTps', 'wrapParTps', drawParTps, { static: true });
+mkChart('perthr', 'cvPerThr', 'wrapPerThr', drawPerThr, { static: true });
 
 $('#fileInput').addEventListener('change', (e) => loadFiles([...e.target.files]));
 $('#btnReset').addEventListener('click', resetView);
