@@ -14,13 +14,18 @@
 
   <div class="spacer"></div>
 
-  <label class="btn" title="Добавить один или несколько json-отчётов">
-    Добавить отчёт…
+  <label class="btn" title="Добавить один или несколько json-отчётов" data-i18n-title="addReportTitle">
+    <span data-i18n="addReport">Добавить отчёт…</span>
     <input type="file" id="fileInput" accept=".json,application/json" multiple hidden>
   </label>
-  <button class="btn" id="btnCloseAll" title="Закрыть (выгрузить) все загруженные отчёты" hidden>Закрыть все</button>
-  <button class="btn" id="btnReset" title="Сбросить масштаб (или двойной клик по графику)">Весь запуск</button>
+  <button class="btn" id="btnCloseAll" title="Закрыть (выгрузить) все загруженные отчёты" data-i18n-title="closeAllTitle" data-i18n="closeAll" hidden>Закрыть все</button>
+  <button class="btn" id="btnReset" title="Сбросить масштаб (или двойной клик по графику)" data-i18n-title="fullRunTitle" data-i18n="fullRun">Весь запуск</button>
   <button class="btn ghost qm" data-help="toolbar" title="Справка: управление, список отчётов">?</button>
+  
+  <select id="langSelect" class="lang-select" title="Language / Язык">
+    <option value="en">EN</option>
+    <option value="ru">RU</option>
+  </select>
 </header>
 
 <div id="banner" class="banner hidden"></div>
@@ -28,8 +33,8 @@
 <main id="main" class="hidden">
 
   <nav class="view-tabs">
-    <button class="view-tab active" data-view="summary">Сводка</button>
-    <button class="view-tab" data-view="details">Детали</button>
+    <button class="view-tab active" data-view="summary" data-i18n="tabSummary">Сводка</button>
+    <button class="view-tab" data-view="details" data-i18n="tabDetails">Детали</button>
   </nav>
 
   <div id="viewSummary" class="view-content">
@@ -37,7 +42,7 @@
     
     <section class="panel">
       <div class="panel-head">
-        <h2>Сравнение запусков</h2>
+        <h2 data-i18n="compareRuns">Сравнение запусков</h2>
         <button class="qm" data-help="compare" title="Что в столбцах">?</button>
       </div>
       <div class="scroll-x"><table class="grid" id="tblCompareSummary"></table></div>
@@ -45,13 +50,13 @@
 
     <section class="panel" id="statsPanelSummary">
       <div class="panel-head">
-        <h2>Статистическое сравнение</h2>
+        <h2 data-i18n="statsComparison">Статистическое сравнение</h2>
         <button class="qm" data-help="stats" title="Как читать графики-поплавки">?</button>
       </div>
 
       <div class="chart" data-chart="gentps">
         <div class="chart-head">
-          <span class="ttl">Генерация токенов в замере, ток/с</span>
+          <span class="ttl" data-i18n="genTokensInRun">Генерация токенов в замере, ток/с</span>
           <button class="qm" data-help="gentps" title="Что здесь показано">?</button>
           <span class="val" data-val="gentps"></span>
         </div>
@@ -60,7 +65,7 @@
 
       <div class="chart" data-chart="partps">
         <div class="chart-head">
-          <span class="ttl">Общая параллельная генерация, ток/с</span>
+          <span class="ttl" data-i18n="totalParallelGen">Общая параллельная генерация, ток/с</span>
           <button class="qm" data-help="partps" title="Что здесь показано">?</button>
           <span class="val" data-val="partps"></span>
         </div>
@@ -75,7 +80,7 @@
 
   <section class="panel cards-panel">
     <div class="panel-head">
-      <h2>Итоги запуска</h2>
+      <h2 data-i18n="runResults">Итоги запуска</h2>
       <button class="qm" data-help="cards" title="Как считаются эти величины">?</button>
     </div>
     <div class="cards" id="cards"></div>
@@ -83,9 +88,9 @@
 
   <section class="panel">
     <div class="panel-head">
-      <h2>Обзор запуска</h2>
+      <h2 data-i18n="runOverview">Обзор запуска</h2>
       <button class="qm" data-help="mini" title="Что здесь показано">?</button>
-      <span class="hint">потяните мышью, чтобы выбрать окно просмотра</span>
+      <span class="hint" data-i18n="hintDrag">потяните мышью, чтобы выбрать окно просмотра</span>
       <div class="legend" id="legendMini"></div>
     </div>
     <div class="canvas-wrap mini" id="wrapMini"><canvas id="cvMini"></canvas></div>
@@ -93,18 +98,18 @@
 
   <section class="panel">
     <div class="panel-head">
-      <h2>Что делала система</h2>
+      <h2 data-i18n="systemActivity">Что делала система</h2>
       <button class="qm" data-help="phases" title="Модель фаз и общие правила графиков">?</button>
       <div class="controls">
-        <label class="chk"><input type="checkbox" id="optLanes" checked> дорожки исполнения</label>
-        <label class="chk"><input type="checkbox" id="optLabels" checked> подписи</label>
-        <label class="chk"><input type="checkbox" id="optAbs"> абсолютное время</label>
+        <label class="chk"><input type="checkbox" id="optLanes" checked> <span data-i18n="optLanes">дорожки исполнения</span></label>
+        <label class="chk"><input type="checkbox" id="optLabels" checked> <span data-i18n="optLabels">подписи</span></label>
+        <label class="chk"><input type="checkbox" id="optAbs"> <span data-i18n="optAbs">абсолютное время</span></label>
       </div>
     </div>
 
     <div class="chart" data-chart="gantt">
       <div class="chart-head">
-        <span class="ttl">Таймлайн запросов</span>
+        <span class="ttl" data-i18n="timeline">Таймлайн запросов</span>
         <button class="qm" data-help="gantt" title="Что здесь показано">?</button>
         <span class="val" data-val="gantt"></span>
       </div>
@@ -113,7 +118,7 @@
 
     <div class="chart" data-chart="conc">
       <div class="chart-head">
-        <span class="ttl">Параллельность: активных запросов по фазам</span>
+        <span class="ttl" data-i18n="parallelism">Параллельность: активных запросов по фазам</span>
         <button class="qm" data-help="conc" title="Что здесь показано">?</button>
         <span class="val" data-val="conc"></span>
       </div>
@@ -122,7 +127,7 @@
 
     <div class="chart" data-chart="thr">
       <div class="chart-head">
-        <span class="ttl">Суммарная генерация, ток/с</span>
+        <span class="ttl" data-i18n="totalGeneration">Суммарная генерация, ток/с</span>
         <button class="qm" data-help="thr" title="Что здесь показано">?</button>
         <span class="val" data-val="thr"></span>
       </div>
@@ -131,7 +136,7 @@
 
     <div class="chart" data-chart="rtps">
       <div class="chart-head">
-        <span class="ttl">Скорость на один запрос, ток/с</span>
+        <span class="ttl" data-i18n="perRequestSpeed">Скорость на один запрос, ток/с</span>
         <button class="qm" data-help="rtps" title="Что здесь показано">?</button>
         <span class="val" data-val="rtps"></span>
       </div>
@@ -140,7 +145,7 @@
 
     <div class="chart" data-chart="pre">
       <div class="chart-head">
-        <span class="ttl">Обработка промптов (prefill), ток/с</span>
+        <span class="ttl" data-i18n="prefillProcessing">Обработка промптов (prefill), ток/с</span>
         <button class="qm" data-help="pre" title="Что здесь показано">?</button>
         <span class="val" data-val="pre"></span>
       </div>
@@ -155,14 +160,14 @@
   <section class="panel two">
     <div>
       <div class="panel-head">
-        <h2>Статистика в окне просмотра</h2>
+        <h2 data-i18n="windowStats">Статистика в окне просмотра</h2>
         <button class="qm" data-help="window" title="Как считаются эти величины">?</button>
       </div>
       <table class="kv" id="tblWindow"></table>
     </div>
     <div>
       <div class="panel-head">
-        <h2>Параметры запуска и итоги</h2>
+        <h2 data-i18n="runParams">Параметры запуска и итоги</h2>
         <button class="qm" data-help="totals" title="Как считаются эти величины">?</button>
       </div>
       <table class="kv" id="tblConfig"></table>
@@ -171,7 +176,7 @@
 
   <section class="panel" id="cmpPanel">
     <div class="panel-head">
-      <h2>Сравнение загруженных запусков</h2>
+      <h2 data-i18n="compareRuns">Сравнение загруженных запусков</h2>
       <button class="qm" data-help="compare" title="Что в столбцах">?</button>
     </div>
     <div class="scroll-x"><table class="grid" id="tblCompare"></table></div>
@@ -179,9 +184,9 @@
 
   <section class="panel">
     <div class="panel-head">
-      <h2>Запросы</h2>
+      <h2 data-i18n="requests">Запросы</h2>
       <button class="qm" data-help="reqs" title="Что в столбцах и что можно делать">?</button>
-      <div class="controls"><label class="chk"><input type="checkbox" id="optOnlyView" checked> только попадающие в окно</label></div>
+      <div class="controls"><label class="chk"><input type="checkbox" id="optOnlyView" checked> <span data-i18n="optOnlyView">только попадающие в окно</span></label></div>
     </div>
     <div class="scroll-x"><table class="grid" id="tblReqs"></table></div>
   </section>
@@ -194,13 +199,13 @@
 
 <section id="dropzone" class="dropzone">
   <div class="dz-inner">
-    <h1>Визуализатор отчётов llperf</h1>
-    <p>Перетащите сюда json-отчёт (или несколько) либо нажмите «Открыть отчёты…».</p>
-    <p class="muted">Показывает, что система делала в каждый момент времени: таймлайн запросов по фазам
+    <h1 data-i18n="dropzoneTitle">Визуализатор отчётов llperf</h1>
+    <p data-i18n="dropzoneDesc">Перетащите сюда json-отчёт (или несколько) либо нажмите «Добавить отчёт…».</p>
+    <p class="muted" data-i18n="dropzoneFeatures">Показывает, что система делала в каждый момент времени: таймлайн запросов по фазам
       (загрузка модели → prefill → генерация), параллельность, суммарную и поштучную скорость генерации.</p>
-    <p class="muted small">Чтобы отчёты из текущего каталога подхватывались автоматически, откройте страницу через
-      локальный сервер: <code>python3 -m http.server</code> → <code>http://localhost:8000/</code>.
-      Справка по каждому блоку — по значку <span class="qm-demo">?</span> рядом с его заголовком.</p>
+    <p class="muted small"><span data-i18n="dropzoneServer">Чтобы отчёты из текущего каталога подхватывались автоматически, откройте страницу через
+      локальный сервер:</span> <code>python3 -m http.server</code> → <code>http://localhost:8000/</code>.
+      <span data-i18n="dropzoneHelp">Справка по каждому блоку — по значку</span> <span class="qm-demo">?</span> <span data-i18n="dropzoneHelpNext">рядом с его заголовком.</span></p>
   </div>
 </section>
 
@@ -210,7 +215,31 @@
 <!-- Тексты справки: показываются во всплывающем окне по значку «?» соответствующего блока -->
 <div id="helpTexts" hidden>
 
-  <section data-help="toolbar">
+  <section data-help="toolbar" data-lang="en">
+    <h3>Chart Controls</h3>
+    <ul>
+      <li><b>Mouse wheel</b> over the chart area — zoom in/out around cursor. Over axis labels, legends, and the rest of the page, the wheel scrolls normally</li>
+      <li><b>Drag</b> — shift time; <b>double-click</b> — reset to full run</li>
+      <li><b>Hover</b> — vertical line synchronized across all charts, tooltip shows system state at that moment</li>
+      <li><b>Click on request</b> in timeline — toggle selection</li>
+      <li><b>Keys</b>: ←/→ shift, +/− zoom, 0 — full run, Esc — clear selection</li>
+      <li><b>"Full run"</b> — reset zoom to entire run range</li>
+    </ul>
+    <h3>Report List</h3>
+    <ul>
+      <li><b>Tab</b> at top — switch between loaded reports</li>
+      <li><b>×</b> on tab — unload report; <b>"Close all"</b> — unload all at once</li>
+      <li><b>Drag tab</b> — reorder (same order used in comparison table)</li>
+      <li>Re-loading a file with the same name updates the report in place</li>
+    </ul>
+    <h3>Where Files Come From</h3>
+    <ul>
+      <li>"Add report…" or drag-and-drop json into window — works even when opening page as file</li>
+      <li>Via local server: <code>?file=name.json</code> (multiple allowed) or <code>reports.json</code> file next to the page with list of names</li>
+    </ul>
+  </section>
+
+  <section data-help="toolbar" data-lang="ru">
     <h3>Управление графиками</h3>
     <ul>
       <li><b>Колесо мыши</b> над полем графика — масштабирование по времени вокруг курсора. Над подписями осей,
@@ -237,7 +266,7 @@
     </ul>
   </section>
 
-  <section data-help="cards">
+  <section data-help="cards" data-lang="ru">
     <h3>Карточки итогов</h3>
     <ul>
       <li><b>запросов</b> — число элементов массива <code>metrics</code>; если оно расходится с
@@ -257,7 +286,7 @@
     <p>Полный список величин с формулами — в справке блока «Параметры запуска и итоги».</p>
   </section>
 
-  <section data-help="mini">
+  <section data-help="mini" data-lang="ru">
     <h3>Обзор запуска</h3>
     <p>Весь запуск целиком, независимо от текущего масштаба.</p>
     <ul>
@@ -270,7 +299,7 @@
     </ul>
   </section>
 
-  <section data-help="phases">
+  <section data-help="phases" data-lang="ru">
     <h3>Модель фаз</h3>
     <p>В отчёте на каждый запрос есть абсолютные метки начала и конца и длительности фаз. Фазы раскладываются
       от начала запроса в порядке ollama: <i>load_model → prompt_processing → response_generating</i>;
@@ -289,7 +318,7 @@
     </ul>
   </section>
 
-  <section data-help="gantt">
+  <section data-help="gantt" data-lang="ru">
     <h3>Таймлайн запросов</h3>
     <ul>
       <li><b>Строка</b> — слот исполнения: запросы жадно раскладываются по свободным слотам в порядке старта,
@@ -309,7 +338,7 @@
     </ul>
   </section>
 
-  <section data-help="conc">
+  <section data-help="conc" data-lang="ru">
     <h3>Параллельность по фазам</h3>
     <p>Сколько запросов одновременно находится в системе и чем именно они заняты. Запрос считается активным
       на интервале [<code>request_start_time_ns</code>, <code>request_end_time_ns</code>].</p>
@@ -326,7 +355,7 @@
     </ul>
   </section>
 
-  <section data-help="thr">
+  <section data-help="thr" data-lang="ru">
     <h3>Суммарная генерация, ток/с</h3>
     <p>Мгновенная пропускная способность системы: сумма скоростей всех запросов, которые в этот момент
       генерируют ответ. Скорость одного запроса =
@@ -341,7 +370,7 @@
     </ul>
   </section>
 
-  <section data-help="rtps">
+  <section data-help="rtps" data-lang="ru">
     <h3>Скорость на один запрос, ток/с</h3>
     <ul>
       <li><b>Отрезок</b> — один запрос: по X его фаза генерации, по Y средняя скорость
@@ -356,7 +385,7 @@
     </ul>
   </section>
 
-  <section data-help="pre">
+  <section data-help="pre" data-lang="ru">
     <h3>Обработка промптов (prefill), ток/с</h3>
     <ul>
       <li><b>Столбик</b> — суммарная скорость prefill:
@@ -370,7 +399,7 @@
     </ul>
   </section>
 
-  <section data-help="gentps">
+  <section data-help="gentps" data-lang="ru">
     <h3>Статистика: генерация токенов в замере, ток/с</h3>
     <p>Сравнительные box plot (ящики с усами) для всех загруженных отчётов. Каждый ящик показывает статистическое 
        распределение скорости генерации токенов для запросов одного отчёта в окне просмотра.</p>
@@ -392,7 +421,7 @@
     </ul>
   </section>
 
-  <section data-help="partps">
+  <section data-help="partps" data-lang="ru">
     <h3>Статистика: общая параллельная генерация токенов, ток/с</h3>
     <p>Сравнительные box plot показывают распределение суммарной параллельной скорости генерации для каждого 
        отчёта во всех моментах времени в окне.</p>
@@ -406,7 +435,7 @@
     </ul>
   </section>
 
-  <section data-help="perthr">
+  <section data-help="perthr" data-lang="ru">
     <h3>Статистика: удельная генерация на поток, ток/с</h3>
     <p>Сравнительные box plot показывают распределение эффективности использования одного потока обработки 
        для каждого отчёта.</p>
@@ -421,7 +450,7 @@
     </ul>
   </section>
 
-  <section data-help="stats">
+  <section data-help="stats" data-lang="ru">
     <h3>Статистическое сравнение запусков</h3>
     <p>Секция содержит графики-поплавки (box plot) для визуального сравнения производительности всех загруженных 
        отчётов. В отличие от графиков выше, эти графики не привязаны к временной оси и не реагируют на курсор.</p>
@@ -441,7 +470,7 @@
        стабильность и эффективность использования ресурсов.</p>
   </section>
 
-  <section data-help="window">
+  <section data-help="window" data-lang="ru">
     <h3>Статистика в окне просмотра</h3>
     <p>Те же определения, что и в итогах запуска, но всё обрезано по границам видимого окна: от фазы
       учитывается только попавшая в окно часть, а её токены — пропорционально этой части. Значения
@@ -464,7 +493,7 @@
     </ul>
   </section>
 
-  <section data-help="totals">
+  <section data-help="totals" data-lang="ru">
     <h3>Параметры запуска и итоги</h3>
     <p>Первые два блока таблицы — данные отчёта без изменений, третий вычисляется визуализатором из массива
       <code>metrics</code>. Все длительности в отчёте в наносекундах, здесь переведены в секунды.</p>
@@ -506,7 +535,7 @@
     </ul>
   </section>
 
-  <section data-help="compare">
+  <section data-help="compare" data-lang="ru">
     <h3>Сравнение загруженных запусков</h3>
     <p>Строка — один загруженный отчёт, порядок строк совпадает с порядком вкладок (его можно менять
       перетаскиванием вкладки). Активный отчёт выделен цветом, <b>клик по строке</b> делает отчёт активным.
@@ -523,7 +552,7 @@
     </ul>
   </section>
 
-  <section data-help="reqs">
+  <section data-help="reqs" data-lang="ru">
     <h3>Таблица запросов</h3>
     <ul>
       <li><b>старт</b>, <b>конец</b> — от начала запуска либо время суток (галочка «абсолютное время»);
@@ -540,6 +569,88 @@
         в таблицу выводится не более 500 строк</li>
     </ul>
   </section>
+
+  <!-- English help sections -->
+  <section data-help="cards" data-lang="en">
+    <h3>Summary Cards</h3>
+    <p>Quick overview of key metrics calculated from the report data. See "Run Parameters and Results" help for detailed formulas.</p>
+  </section>
+
+  <section data-help="mini" data-lang="en">
+    <h3>Run Overview</h3>
+    <p>Compact view showing active requests and total throughput. Drag to select a viewing window for detailed charts below.</p>
+  </section>
+
+  <section data-help="phases" data-lang="en">
+    <h3>Phase Model</h3>
+    <p>Each request goes through phases: model load → prefill (prompt processing) → generation (response tokens) → overhead (network, queue).</p>
+  </section>
+
+  <section data-help="gantt" data-lang="en">
+    <h3>Request Timeline</h3>
+    <p>Gantt chart showing each request's phases over time. Execution lanes or request order. Click to select, double-click to zoom to request.</p>
+  </section>
+
+  <section data-help="conc" data-lang="en">
+    <h3>Parallelism</h3>
+    <p>Number of active requests by phase at each moment. Shows how many requests are simultaneously in prefill, generation, etc.</p>
+  </section>
+
+  <section data-help="thr" data-lang="en">
+    <h3>Total Generation</h3>
+    <p>System throughput in tok/s: total tokens generated across all parallel requests at each moment.</p>
+  </section>
+
+  <section data-help="rtps" data-lang="en">
+    <h3>Per-Request Speed</h3>
+    <p>Generation speed for each individual request. Shows performance variation across requests.</p>
+  </section>
+
+  <section data-help="pre" data-lang="en">
+    <h3>Prefill Processing</h3>
+    <p>Prompt processing throughput in tok/s for each request.</p>
+  </section>
+
+  <section data-help="gentps" data-lang="en">
+    <h3>Generation Speed Comparison</h3>
+    <p>Box plot comparing per-request generation speed across all loaded reports.</p>
+  </section>
+
+  <section data-help="partps" data-lang="en">
+    <h3>Parallel Generation Comparison</h3>
+    <p>Box plot comparing total parallel generation throughput across all loaded reports.</p>
+  </section>
+
+  <section data-help="perthr" data-lang="en">
+    <h3>Per-Thread Speed Comparison</h3>
+    <p>Box plot comparing per-thread speed metrics across all loaded reports.</p>
+  </section>
+
+  <section data-help="stats" data-lang="en">
+    <h3>Statistical Comparison</h3>
+    <p>Box plots show distribution: min, Q1, median, Q3, max, and outliers for each report.</p>
+  </section>
+
+  <section data-help="window" data-lang="en">
+    <h3>Window Statistics</h3>
+    <p>Metrics calculated for the currently visible time window (or full run if not zoomed).</p>
+  </section>
+
+  <section data-help="totals" data-lang="en">
+    <h3>Run Parameters and Results</h3>
+    <p>Configuration from the report, summary fields, and calculated metrics with formulas.</p>
+  </section>
+
+  <section data-help="compare" data-lang="en">
+    <h3>Compare Runs</h3>
+    <p>Side-by-side comparison of all loaded reports. Click row to switch active report.</p>
+  </section>
+
+  <section data-help="reqs" data-lang="en">
+    <h3>Requests</h3>
+    <p>Detailed table of all requests. Click header to sort, click row to select, double-click to zoom. "Only in window" checkbox filters to visible time range. Table shows first 500 rows.</p>
+  </section>
+
 </div>
 
 <script src="app.js"></script>

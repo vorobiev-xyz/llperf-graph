@@ -71,6 +71,13 @@ code{font-family:ui-monospace,"JetBrains Mono",Consolas,monospace;background:#00
 }
 .btn:hover{border-color:#46506a; background:var(--panel2)}
 .btn.ghost{padding:5px 9px; color:var(--muted)}
+.lang-select{
+  padding:5px 8px; border:1px solid var(--line); border-radius:7px;
+  background:var(--panel); color:var(--text); font:inherit; font-size:12px;
+  cursor:pointer; transition:all .15s;
+}
+.lang-select:hover{background:var(--panel2); border-color:#46506a}
+.lang-select:focus{outline:none; border-color:var(--accent)}
 
 .banner{margin:10px 14px; padding:8px 12px; border-radius:8px;
   background:#3a1c1c; border:1px solid #6b2b2b; color:#ffd9d4; font-size:12px}
@@ -159,15 +166,19 @@ table{border-collapse:collapse; width:100%; font-variant-numeric:tabular-nums}
 
 /* ---------- справка по блокам ---------- */
 .qm{
-  flex:none; width:16px; height:16px; padding:0; line-height:14px; text-align:center;
+  flex:none; width:16px; height:16px; padding:0; 
+  display:inline-flex; align-items:center; justify-content:center;
   border:1px solid var(--line); border-radius:50%; background:var(--panel2);
   color:var(--muted); font-size:11px; font-family:inherit; cursor:pointer;
 }
 .qm:hover{color:var(--accent); border-color:var(--accent)}
 .qm.on{background:var(--accent); border-color:var(--accent); color:#0c1116}
-.btn.ghost.qm{width:22px; height:22px; line-height:20px; border-radius:50%; font-size:12px}
-.qm-demo{display:inline-block; width:15px; height:15px; line-height:14px; text-align:center; font-size:10px;
-  border:1px solid var(--line); border-radius:50%; color:var(--muted)}
+.btn.ghost.qm{width:22px; height:22px; font-size:12px}
+.qm-demo{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:15px; height:15px; font-size:10px;
+  border:1px solid var(--line); border-radius:50%; color:var(--muted)
+}
 
 .pop{
   position:fixed; z-index:70; width:min(560px,calc(100vw - 24px)); max-height:64vh; overflow:auto;

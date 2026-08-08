@@ -16,13 +16,415 @@ const CLR = {
   sel:  '#ffffff',
   band: '#57d07f',
 };
-const PHASE_RU = { load: 'загрузка модели', pre: 'prefill', gen: 'генерация', ovh: 'накладные' };
 // Палитра для разных отчётов на сравнительных графиках
 const REPORT_COLORS = [
   '#57d07f', '#5ec8f0', '#f0a35e', '#e85d75', '#9b6bdf', 
   '#4ecdc4', '#ff9f43', '#5f27cd', '#00d2d3', '#ff6348',
   '#a5b1c2', '#48dbfb', '#feca57', '#ee5a6f', '#c8d6e5'
 ];
+
+/* ----------------------------- локализация -------------------------------- */
+const LANG = {
+  en: {
+    // Top bar
+    brand: 'llperf·graph',
+    addReport: 'Add report…',
+    addReportTitle: 'Add one or more json reports',
+    closeAll: 'Close all',
+    closeAllTitle: 'Close (unload) all loaded reports',
+    fullRun: 'Full run',
+    fullRunTitle: 'Reset zoom (or double-click on chart)',
+    
+    // Tabs
+    tabSummary: 'Summary',
+    tabDetails: 'Details',
+    
+    // Phases
+    phaseLoad: 'model load',
+    phasePre: 'prefill',
+    phaseGen: 'generation',
+    phaseOvh: 'overhead',
+    
+    // Sections
+    runResults: 'Run Results',
+    runOverview: 'Run Overview',
+    systemActivity: 'System Activity',
+    windowStats: 'Window Statistics',
+    runParams: 'Run Parameters and Results',
+    compareRuns: 'Compare Runs',
+    statsComparison: 'Statistical Comparison',
+    requests: 'Requests',
+    
+    // Charts
+    timeline: 'Request Timeline',
+    parallelism: 'Parallelism: Active Requests by Phase',
+    totalGeneration: 'Total Generation, tok/s',
+    perRequestSpeed: 'Speed per Request, tok/s',
+    prefillProcessing: 'Prompt Processing (prefill), tok/s',
+    genTokensInRun: 'Generation Tokens in Run, tok/s',
+    totalParallelGen: 'Total Parallel Generation, tok/s',
+    
+    // Cards
+    cardRequests: 'requests',
+    cardDuration: 'duration',
+    cardParallelism: 'parallelism',
+    cardTotalGen: 'total generation',
+    cardPerRequest: 'per request',
+    cardP50: 'p50 per request',
+    cardPrefill: 'prefill',
+    cardResponseTokens: 'response tokens',
+    cardModel: 'model',
+    
+    // Units
+    unitTokS: 'tok/s',
+    unitAvg: 'avg',
+    unitMax: 'max',
+    unitTotal: 'total',
+    unitOf: 'of',
+    unitSlot: 'slot',
+    unitSlots: 'slots',
+    
+    // Common
+    min: 'min',
+    max: 'max',
+    median: 'median',
+    mean: 'mean',
+    outlier: 'outlier',
+    outliers: 'outliers',
+    measurements: 'measurements',
+    
+    noData: 'no data',
+    noDataInWindow: 'no data in window',
+    
+    // Tooltips
+    request: 'Request',
+    phaseNow: 'phase now',
+    startEnd: 'start → end',
+    duration: 'duration',
+    slot: 'slot',
+    prompt: 'prompt',
+    response: 'response',
+    modelLoad: 'model load',
+    overhead: 'overhead',
+    generatedSoFar: 'generated so far',
+    genPrefillLoad: 'generation / prefill / load',
+    totalGeneration: 'total generation',
+    totalPrefill: 'total prefill',
+    fromStart: 'from start',
+    
+    // Table headers
+    colName: 'Name',
+    colRequests: 'Requests',
+    colDuration: 'Duration',
+    colLane: 'lane',
+    colStart: 'start',
+    colEnd: 'end',
+    colWait: 'wait',
+    colPrefill: 'prefill',
+    colGeneration: 'generation',
+    colTotal: 'total',
+    colPrompt: 'prompt',
+    colResponse: 'response',
+    colGenSpeed: 'gen',
+    colAvgSpeed: 'avg',
+    
+    // Run info
+    runDuration: 'run duration',
+    maxSlots: 'max slots occupied',
+    avgParallelism: 'average parallelism',
+    idleTime: 'idle (no requests)',
+    windowDuration: 'window duration',
+    requestsInWindow: 'requests in window',
+    started: 'started',
+    finished: 'finished',
+    machineGenTime: 'machine generation time',
+    inAverage: 'slots on average',
+    
+    // Card labels
+    minColonSec: 'min:sec',
+    avgMaxFormat: 'avg · max',
+    
+    // Tooltip
+    activeRequests: 'active requests',
+    inWindow: 'in window',
+    totalTps: 'total tok/s',
+    
+    // Format helpers
+    ofFormat: 'of', // for "X of Y"
+    
+    // Options/Controls
+    hintDrag: 'drag to select viewing window',
+    optLanes: 'execution lanes',
+    optLabels: 'labels',
+    optAbs: 'absolute time',
+    optOnlyView: 'only in window',
+    
+    // Dropzone (empty state)
+    dropzoneTitle: 'llperf Reports Visualizer',
+    dropzoneDesc: 'Drag and drop a json report (or several) here, or click "Add report…".',
+    dropzoneFeatures: 'Shows what the system was doing at every moment: request timeline by phases (model load → prefill → generation), parallelism, total and per-request generation speed.',
+    dropzoneServer: 'To auto-load reports from current directory, open the page via a local server:',
+    dropzoneHelp: 'Help for each section is available by clicking the',
+    dropzoneHelpNext: 'icon next to its heading.',
+    
+    // Legends
+    legendPrefill: 'prompt processing (prefill)',
+    legendGeneration: 'response generation',
+    legendOverhead: 'overhead (network, queue)',
+    legendCursor: 'cursor / window',
+    legendHint: 'X-axis — time from run start; each pixel shows maximum, so short spikes are not lost',
+    idle: 'idle',
+    tokens: 'tokens',
+    perRequest: 'per request',
+    comparison: 'comparison of',
+    reports: 'reports',
+    byGenSpeed: 'by per-request generation speed',
+    byParallelGen: 'by total parallel generation',
+    byPerThread: 'by per-thread speed',
+    
+    // Config table
+    totalResponseTokens: 'total response tokens',
+    totalPromptTokens: 'total prompt tokens',
+    totalGeneration: 'total generation',
+    genTimeSum: 'generation time (sum)',
+    prefillTimeSum: 'prefill time (sum)',
+    modelLoadTimeSum: 'model load time (sum)',
+    overheadSum: 'overhead (sum)',
+    
+    // Window table
+    window: 'window',
+    idleLabel: 'idle',
+    generatedTokens: 'generated tokens',
+    avgRequestSpeed: 'avg. request speed',
+    promptTokens: 'prompt tokens',
+    for: 'for',
+    modelLoads: 'model loads',
+    
+    // Request table
+    showingFirst: 'showing first',
+    outOf: 'out of',
+    reduceWindow: 'reduce viewing window',
+    
+    // Compare table
+    total: 'total',
+    maxParallel: 'max parallel',
+    responseTokens: 'response tokens',
+    
+    // Help
+    helpClose: 'Close',
+    helpHint: 'Esc or click outside to close. Each section has its own "?" button.',
+    
+    // Axis labels
+    timeFormat: 'hh:mm:ss',
+    durationFormat: 'min:sec',
+    tok: 'tok',
+  },
+  ru: {
+    // Top bar
+    brand: 'llperf·graph',
+    addReport: 'Добавить отчёт…',
+    addReportTitle: 'Добавить один или несколько json-отчётов',
+    closeAll: 'Закрыть все',
+    closeAllTitle: 'Закрыть (выгрузить) все загруженные отчёты',
+    fullRun: 'Весь запуск',
+    fullRunTitle: 'Сбросить масштаб (или двойной клик по графику)',
+    
+    // Tabs
+    tabSummary: 'Сводка',
+    tabDetails: 'Детали',
+    
+    // Phases
+    phaseLoad: 'загрузка модели',
+    phasePre: 'prefill',
+    phaseGen: 'генерация',
+    phaseOvh: 'накладные',
+    
+    // Sections
+    runResults: 'Итоги запуска',
+    runOverview: 'Обзор запуска',
+    systemActivity: 'Что делала система',
+    windowStats: 'Статистика в окне просмотра',
+    runParams: 'Параметры запуска и итоги',
+    compareRuns: 'Сравнение запусков',
+    statsComparison: 'Статистическое сравнение',
+    requests: 'Запросы',
+    
+    // Charts
+    timeline: 'Таймлайн запросов',
+    parallelism: 'Параллельность: активных запросов по фазам',
+    totalGeneration: 'Суммарная генерация, ток/с',
+    perRequestSpeed: 'Скорость на один запрос, ток/с',
+    prefillProcessing: 'Обработка промптов (prefill), ток/с',
+    genTokensInRun: 'Генерация токенов в замере, ток/с',
+    totalParallelGen: 'Общая параллельная генерация, ток/с',
+    
+    // Cards
+    cardRequests: 'запросов',
+    cardDuration: 'длительность',
+    cardParallelism: 'параллельность',
+    cardTotalGen: 'суммарно генерация',
+    cardPerRequest: 'на запрос',
+    cardP50: 'p50 на запрос',
+    cardPrefill: 'prefill',
+    cardResponseTokens: 'токенов ответа',
+    cardModel: 'модель',
+    
+    // Units
+    unitTokS: 'ток/с',
+    unitAvg: 'сред',
+    unitMax: 'макс',
+    unitTotal: 'всего',
+    unitOf: 'из',
+    unitSlot: 'слот',
+    unitSlots: 'слота',
+    
+    // Common
+    min: 'мин',
+    max: 'макс',
+    median: 'медиана',
+    mean: 'среднее',
+    outlier: 'выброс',
+    outliers: 'выбросов',
+    measurements: 'замеров',
+    
+    noData: 'нет данных',
+    noDataInWindow: 'нет данных в окне',
+    
+    // Tooltips
+    request: 'Запрос',
+    phaseNow: 'фаза сейчас',
+    startEnd: 'старт → конец',
+    duration: 'длительность',
+    slot: 'слот',
+    prompt: 'промпт',
+    response: 'ответ',
+    modelLoad: 'загрузка модели',
+    overhead: 'накладные',
+    generatedSoFar: 'сгенерировано к моменту',
+    genPrefillLoad: 'генерация / prefill / загрузка',
+    totalGeneration: 'суммарная генерация',
+    totalPrefill: 'суммарный prefill',
+    fromStart: 'от старта',
+    
+    // Table headers
+    colName: 'Имя',
+    colRequests: 'Запросов',
+    colDuration: 'Длительность',
+    colLane: 'слот',
+    colStart: 'старт',
+    colEnd: 'конец',
+    colWait: 'ожидание',
+    colPrefill: 'prefill',
+    colGeneration: 'генерация',
+    colTotal: 'всего',
+    colPrompt: 'промпт',
+    colResponse: 'ответ',
+    colGenSpeed: 'ген',
+    colAvgSpeed: 'сред',
+    
+    // Run info
+    runDuration: 'длительность запуска',
+    maxSlots: 'занятых слотов (макс)',
+    avgParallelism: 'средняя параллельность',
+    idleTime: 'простой (нет запросов)',
+    windowDuration: 'длительность окна',
+    requestsInWindow: 'запросов в окне',
+    started: 'стартовало',
+    finished: 'завершилось',
+    machineGenTime: 'машинное время генерации',
+    inAverage: 'слота в среднем',
+    
+    // Card labels
+    minColonSec: 'мин:с',
+    avgMaxFormat: 'сред · макс',
+    
+    // Tooltip
+    activeRequests: 'активных запросов',
+    inWindow: 'в окне',
+    totalTps: 'суммарно ток/с',
+    
+    // Format helpers
+    ofFormat: 'из', // for "X из Y"
+    
+    // Options/Controls
+    hintDrag: 'потяните мышью, чтобы выбрать окно просмотра',
+    optLanes: 'дорожки исполнения',
+    optLabels: 'подписи',
+    optAbs: 'абсолютное время',
+    optOnlyView: 'только попадающие в окно',
+    
+    // Dropzone (empty state)
+    dropzoneTitle: 'Визуализатор отчётов llperf',
+    dropzoneDesc: 'Перетащите сюда json-отчёт (или несколько) либо нажмите «Добавить отчёт…».',
+    dropzoneFeatures: 'Показывает, что система делала в каждый момент времени: таймлайн запросов по фазам (загрузка модели → prefill → генерация), параллельность, суммарную и поштучную скорость генерации.',
+    dropzoneServer: 'Чтобы отчёты из текущего каталога подхватывались автоматически, откройте страницу через локальный сервер:',
+    dropzoneHelp: 'Справка по каждому блоку — по значку',
+    dropzoneHelpNext: 'рядом с его заголовком.',
+    
+    // Legends
+    legendPrefill: 'обработка промпта (prefill)',
+    legendGeneration: 'генерация ответа',
+    legendOverhead: 'накладные расходы (сеть, очередь)',
+    legendCursor: 'курсор / окно',
+    legendHint: 'ось X — время от старта запуска; в каждом пикселе показан максимум, поэтому короткие всплески не теряются',
+    idle: 'простой',
+    tokens: 'токенов',
+    perRequest: 'на запрос',
+    comparison: 'сравнение',
+    reports: 'отчётов',
+    byGenSpeed: 'по скорости генерации на запрос',
+    byParallelGen: 'по суммарной параллельной генерации',
+    byPerThread: 'по удельной скорости на поток',
+    
+    // Config table
+    totalResponseTokens: 'суммарно токенов ответа',
+    totalPromptTokens: 'суммарно токенов промпта',
+    totalGeneration: 'суммарная генерация',
+    genTimeSum: 'время генерации (сумма)',
+    prefillTimeSum: 'время prefill (сумма)',
+    modelLoadTimeSum: 'время загрузки модели (сумма)',
+    overheadSum: 'накладные расходы (сумма)',
+    
+    // Window table
+    window: 'окно',
+    idleLabel: 'простой',
+    generatedTokens: 'сгенерировано токенов',
+    avgRequestSpeed: 'скорость на запрос (сред.)',
+    promptTokens: 'токенов промпта',
+    for: 'за',
+    modelLoads: 'загрузка модели',
+    
+    // Request table
+    showingFirst: 'показаны первые',
+    outOf: 'из',
+    reduceWindow: 'уменьшите окно просмотра',
+    
+    // Compare table
+    total: 'сум.',
+    maxParallel: 'макс. паралл.',
+    responseTokens: 'токенов ответа',
+    
+    // Help
+    helpClose: 'Закрыть',
+    helpHint: 'Esc или клик вне окна — закрыть. Свой «?» есть у каждого блока.',
+    
+    // Axis labels
+    timeFormat: 'чч:мм:сс',
+    durationFormat: 'мин:с',
+    tok: 'ток',
+  }
+};
+
+let currentLang = localStorage.getItem('llperf-lang') || 'en';
+const t = (key) => LANG[currentLang][key] || key;
+const PHASE_NAMES = () => ({ 
+  load: t('phaseLoad'), 
+  pre: t('phasePre'), 
+  gen: t('phaseGen'), 
+  ovh: t('phaseOvh') 
+});
+
+
 
 /* ----------------------------- утилиты ----------------------------------- */
 const $  = (s) => document.querySelector(s);
@@ -376,7 +778,7 @@ function drawGantt(ctx, g, r) {
   const every = Math.max(1, Math.ceil(rows / Math.max(1, Math.floor(g.ph / 14))));
   for (let i = 0; i < rows; i += every) {
     const y = g.pt + i * rowH + rowH / 2;
-    ctx.fillText(S.opts.lanes ? 'слот ' + (i + 1) : '#' + (list[i] ? list[i].i + 1 : i + 1), g.pl - 7, y);
+    ctx.fillText(S.opts.lanes ? t('unitSlot') + ' ' + (i + 1) : '#' + (list[i] ? list[i].i + 1 : i + 1), g.pl - 7, y);
   }
   ctx.restore();
 
@@ -412,7 +814,7 @@ function drawGantt(ctx, g, r) {
       ctx.save();
       ctx.beginPath(); ctx.rect(x0, y, x1 - x0, bh); ctx.clip();
       ctx.fillStyle = '#0d1116'; ctx.font = '10px ui-sans-serif,system-ui'; ctx.textBaseline = 'middle';
-      ctx.fillText(`#${q.i + 1} · ${int(q.rl)} ток · ${num(q.genTps, 1)} ток/с`, x0 + 4, y + bh / 2 + 0.5);
+      ctx.fillText(`#${q.i + 1} · ${int(q.rl)} ${t('tok')} · ${num(q.genTps, 1)} ${t('unitTokS')}`, x0 + 4, y + bh / 2 + 0.5);
       ctx.restore();
     }
   }
@@ -717,7 +1119,7 @@ function drawGenTps(ctx, g, r, chart) {
   
   if (!dataList.length) {
     ctx.fillStyle = CLR.text; ctx.font = '12px ui-sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('нет данных', g.pl + g.pw / 2, g.pt + g.ph / 2);
+    ctx.fillText(t('noData'), g.pl + g.pw / 2, g.pt + g.ph / 2);
     return;
   }
   
@@ -753,7 +1155,7 @@ function drawParTps(ctx, g, r, chart) {
   
   if (!dataList.length) {
     ctx.fillStyle = CLR.text; ctx.font = '12px ui-sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('нет данных', g.pl + g.pw / 2, g.pt + g.ph / 2);
+    ctx.fillText(t('noData'), g.pl + g.pw / 2, g.pt + g.ph / 2);
     return;
   }
   
@@ -792,7 +1194,7 @@ function drawPerThr(ctx, g, r, chart) {
   
   if (!dataList.length) {
     ctx.fillStyle = CLR.text; ctx.font = '12px ui-sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText('нет данных', g.pl + g.pw / 2, g.pt + g.ph / 2);
+    ctx.fillText(t('noData'), g.pl + g.pw / 2, g.pt + g.ph / 2);
     return;
   }
   
@@ -818,7 +1220,7 @@ function drawAxis() {
   }
   ctx.stroke();
   ctx.textAlign = 'left';
-  ctx.fillText(S.opts.abs ? 'чч:мм:сс' : 'мин:с', 2, 6);
+  ctx.fillText(S.opts.abs ? t('timeFormat') : t('durationFormat'), 2, 6);
   if (S.cursor !== null && S.cursor >= g.a && S.cursor <= g.b) {
     const x = g.x(S.cursor), label = fmtTime(r, S.cursor, true);
     ctx.font = '10px ui-sans-serif'; const w = ctx.measureText(label).width + 8;
@@ -1003,16 +1405,16 @@ function card(k, v, sub) {
 function renderCards(r) {
   const c = r.config, s = r.summary;
   $('#cards').innerHTML = [
-    card('запросов', int(r.reqs.length), s.iterations && s.iterations !== r.reqs.length ? 'из ' + int(s.iterations) : ''),
-    card('длительность', fmtClock(r.wall), 'мин:с'),
-    card('параллельность', num(r.avgConc, 2), 'сред · макс ' + int(r.maxConc) + (c.parallel_size ? '/' + int(c.parallel_size) : '')),
-    card('суммарно генерация', num(r.aggTps, 1), 'ток/с'),
-    card('на запрос', num(Number(s.avg_response_tps) || r.totGen / (r.sumGenTime || 1), 2), 'ток/с сред'),
-    card('p50 на запрос', num(Number(s.p50_response_tps) || r.p50GenTps, 2), 'ток/с'),
-    card('prefill', num(Number(s.avg_prompt_tps) || r.totPre / (r.sumPreTime || 1), 0), 'ток/с сред'),
-    card('токенов ответа', int(r.totGen), 'всего'),
+    card(t('cardRequests'), int(r.reqs.length), s.iterations && s.iterations !== r.reqs.length ? t('ofFormat') + ' ' + int(s.iterations) : ''),
+    card(t('cardDuration'), fmtClock(r.wall), t('minColonSec')),
+    card(t('cardParallelism'), num(r.avgConc, 2), t('avgMaxFormat') + ' ' + int(r.maxConc) + (c.parallel_size ? '/' + int(c.parallel_size) : '')),
+    card(t('cardTotalGen'), num(r.aggTps, 1), t('unitTokS')),
+    card(t('cardPerRequest'), num(Number(s.avg_response_tps) || r.totGen / (r.sumGenTime || 1), 2), t('unitTokS') + ' ' + t('unitAvg')),
+    card(t('cardP50'), num(Number(s.p50_response_tps) || r.p50GenTps, 2), t('unitTokS')),
+    card(t('cardPrefill'), num(Number(s.avg_prompt_tps) || r.totPre / (r.sumPreTime || 1), 0), t('unitTokS') + ' ' + t('unitAvg')),
+    card(t('cardResponseTokens'), int(r.totGen), t('unitTotal')),
   ].join('') +
-    `<div class="card"><div class="k">модель${c.provider ? ' · ' + esc(String(c.provider)) : ''}</div>` +
+    `<div class="card"><div class="k">${t('cardModel')}${c.provider ? ' · ' + esc(String(c.provider)) : ''}</div>` +
     `<div class="v txt" title="${esc(String(c.model || ''))}">${esc(String(c.model || '—'))}</div></div>`;
 }
 
@@ -1027,50 +1429,50 @@ function renderConfigTable(r) {
     ['<b>config</b>', ''], ...cfgRows,
     ['<b>summary (из отчёта)</b>', ''], ...sumRows,
     ['<b>вычислено</b>', ''],
-    ['начало запуска', fmtAbs(r, 0, false) + ' ' + new Date(r.epochMs).toLocaleDateString('ru-RU')],
-    ['длительность запуска', fmtDur(r.wall)],
-    ['занятых слотов (макс)', int(r.maxConc)],
-    ['средняя параллельность', num(r.avgConc, 2)],
-    ['простой (нет запросов)', fmtDur(r.wall - r.busy) + ' · ' + num(((r.wall - r.busy) / r.wall) * 100, 1) + ' %'],
-    ['суммарно токенов ответа', int(r.totGen)],
-    ['суммарно токенов промпта', int(r.totPre)],
-    ['суммарная генерация', num(r.aggTps, 2) + ' ток/с'],
-    ['время генерации (сумма)', fmtDur(r.sumGenTime)],
-    ['время prefill (сумма)', fmtDur(r.sumPreTime)],
-    ['время загрузки модели (сумма)', fmtDur(r.sumLoad)],
-    ['накладные расходы (сумма)', fmtDur(r.sumOvh)],
+    ['начало запуска', fmtAbs(r, 0, false) + ' ' + new Date(r.epochMs).toLocaleDateString(currentLang === 'ru' ? 'ru-RU' : 'en-US')],
+    [t('runDuration'), fmtDur(r.wall)],
+    [t('maxSlots'), int(r.maxConc)],
+    [t('avgParallelism'), num(r.avgConc, 2)],
+    [t('idleTime'), fmtDur(r.wall - r.busy) + ' · ' + num(((r.wall - r.busy) / r.wall) * 100, 1) + ' %'],
+    [t('totalResponseTokens'), int(r.totGen)],
+    [t('totalPromptTokens'), int(r.totPre)],
+    [t('totalGeneration'), num(r.aggTps, 2) + ' ' + t('unitTokS')],
+    [t('genTimeSum'), fmtDur(r.sumGenTime)],
+    [t('prefillTimeSum'), fmtDur(r.sumPreTime)],
+    [t('modelLoadTimeSum'), fmtDur(r.sumLoad)],
+    [t('overheadSum'), fmtDur(r.sumOvh)],
   ]);
 }
 function renderWindowTable(r) {
   const w = windowStats(r);
   const pct = (v) => num((v / (w.sp || 1)) * 100, 1) + ' %';
   $('#tblWindow').innerHTML = kvRows([
-    ['окно', fmtTime(r, w.a, true) + ' — ' + fmtTime(r, w.b, true)],
-    ['длительность окна', fmtDur(w.sp)],
-    ['запросов в окне', int(w.active) + ' (стартовало ' + int(w.started) + ', завершилось ' + int(w.finished) + ')'],
-    ['параллельность', num(w.avgConc, 2) + ' сред · ' + int(w.maxConc) + ' макс'],
-    ['простой', fmtDur(w.idle) + ' · ' + pct(w.idle)],
-    ['сгенерировано токенов', int(w.gTok)],
-    ['суммарная генерация', num(w.aggTps, 2) + ' ток/с'],
-    ['скорость на запрос (сред.)', num(w.perReqTps, 2) + ' ток/с'],
-    ['машинное время генерации', fmtDur(w.genTime) + ' · ' + num(w.genTime / (w.sp || 1), 2) + ' слота в среднем'],
-    ['prefill', int(w.pTok) + ' ток за ' + fmtDur(w.preTime)],
-    ['загрузка модели', int(w.loads) + ' × / ' + fmtDur(w.loadTime)],
+    [t('window'), fmtTime(r, w.a, true) + ' — ' + fmtTime(r, w.b, true)],
+    [t('windowDuration'), fmtDur(w.sp)],
+    [t('requestsInWindow'), int(w.active) + ' (' + t('started') + ' ' + int(w.started) + ', ' + t('finished') + ' ' + int(w.finished) + ')'],
+    [t('cardParallelism'), num(w.avgConc, 2) + ' ' + t('unitAvg') + ' · ' + int(w.maxConc) + ' ' + t('unitMax')],
+    [t('idleLabel'), fmtDur(w.idle) + ' · ' + pct(w.idle)],
+    [t('generatedTokens'), int(w.gTok)],
+    [t('totalGeneration'), num(w.aggTps, 2) + ' ' + t('unitTokS')],
+    [t('avgRequestSpeed'), num(w.perReqTps, 2) + ' ' + t('unitTokS')],
+    [t('machineGenTime'), fmtDur(w.genTime) + ' · ' + num(w.genTime / (w.sp || 1), 2) + ' ' + t('inAverage')],
+    ['prefill', int(w.pTok) + ' ' + t('tokens') + ' ' + t('for') + ' ' + fmtDur(w.preTime)],
+    [t('modelLoads'), int(w.loads) + ' × / ' + fmtDur(w.loadTime)],
   ]);
 }
 
 const REQ_COLS = [
   ['i', '#', (q) => q.i + 1],
-  ['s', 'старт', (q, r) => fmtTime(r, q.s, true)],
-  ['e', 'конец', (q, r) => fmtTime(r, q.e, true)],
+  ['s', () => t('colStart'), (q, r) => fmtTime(r, q.s, true)],
+  ['e', () => t('colEnd'), (q, r) => fmtTime(r, q.e, true)],
   ['dur', 'длит., с', (q) => num(q.dur, 1)],
-  ['lane', 'слот', (q) => q.lane + 1],
-  ['pl', 'промпт, ток', (q) => int(q.pl)],
+  ['lane', () => t('colLane'), (q) => q.lane + 1],
+  ['pl', () => t('colPrompt') + ', ток', (q) => int(q.pl)],
   ['pp', 'prefill, с', (q) => num(q.pp, 3)],
-  ['preTps', 'prefill, ток/с', (q) => num(q.preTps, 0)],
-  ['rl', 'ответ, ток', (q) => int(q.rl)],
-  ['gen', 'генерация, с', (q) => num(q.gen, 1)],
-  ['genTps', 'ток/с', (q) => num(q.genTps, 2)],
+  ['preTps', 'prefill, ' + (() => t('unitTokS'))(), (q) => num(q.preTps, 0)],
+  ['rl', () => t('colResponse') + ', ток', (q) => int(q.rl)],
+  ['gen', () => t('colGeneration') + ', с', (q) => num(q.gen, 1)],
+  ['genTps', () => t('unitTokS'), (q) => num(q.genTps, 2)],
   ['load', 'load, с', (q) => num(q.load, 3)],
   ['ovh', 'накладные, с', (q) => num(q.ovh, 3)],
 ];
@@ -1081,12 +1483,12 @@ function renderReqTable(r) {
   list = list.slice().sort((x, y) => (x[key] - y[key]) * dir);
   const total = list.length, LIMIT = 500;
   if (total > LIMIT) list = list.slice(0, LIMIT);
-  const head = '<thead><tr>' + REQ_COLS.map(([k, t]) =>
-    `<th data-k="${k}">${t}${S.sort.key === k ? (dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('') + '</tr></thead>';
+  const head = '<thead><tr>' + REQ_COLS.map(([k, titleFn]) =>
+    `<th data-k="${k}">${typeof titleFn === 'function' ? titleFn() : titleFn}${S.sort.key === k ? (dir > 0 ? ' ▲' : ' ▼') : ''}</th>`).join('') + '</tr></thead>';
   const body = '<tbody>' + list.map((q) =>
     `<tr data-i="${q.i}" class="${S.sel === q.i ? 'sel' : ''}">` +
     REQ_COLS.map(([, , f]) => `<td>${f(q, r)}</td>`).join('') + '</tr>').join('') +
-    (total > LIMIT ? `<tr><td colspan="${REQ_COLS.length}" style="color:var(--muted)">показаны первые ${LIMIT} из ${int(total)} — уменьшите окно просмотра</td></tr>` : '') +
+    (total > LIMIT ? `<tr><td colspan="${REQ_COLS.length}" style="color:var(--muted)">${t('showingFirst')} ${LIMIT} ${t('outOf')} ${int(total)} — ${t('reduceWindow')}</td></tr>` : '') +
     '</tbody>';
   const t = $('#tblReqs');
   t.innerHTML = head + body;
@@ -1106,52 +1508,52 @@ function renderReqTable(r) {
 
 function renderCompare() {
   const cols = [
-    ['файл', (r) => esc(r.name)],
-    ['запросов', (r) => int(r.reqs.length)],
+    [() => t('colName'), (r) => esc(r.name)],
+    [() => t('colRequests'), (r) => int(r.reqs.length)],
     ['parallel', (r) => (r.config.parallel_size ?? '—')],
-    ['модель', (r) => esc(String(r.config.model ?? '—'))],
-    ['длительность', (r) => fmtClock(r.wall)],
-    ['сум. ток/с', (r) => num(r.aggTps, 1)],
-    ['ток/с на запрос', (r) => num(Number(r.summary.avg_response_tps) || 0, 2)],
-    ['p50 ток/с', (r) => num(Number(r.summary.p50_response_tps) || r.p50GenTps, 2)],
-    ['prefill ток/с', (r) => num(Number(r.summary.avg_prompt_tps) || 0, 0)],
-    ['макс. паралл.', (r) => int(r.maxConc)],
-    ['простой', (r) => num(((r.wall - r.busy) / r.wall) * 100, 1) + ' %'],
-    ['токенов ответа', (r) => int(r.totGen)],
+    [() => t('cardModel'), (r) => esc(String(r.config.model ?? '—'))],
+    [() => t('colDuration'), (r) => fmtClock(r.wall)],
+    [() => t('total') + ' ' + t('unitTokS'), (r) => num(r.aggTps, 1)],
+    [() => t('unitTokS') + ' ' + t('perRequest'), (r) => num(Number(r.summary.avg_response_tps) || 0, 2)],
+    [() => 'p50 ' + t('unitTokS'), (r) => num(Number(r.summary.p50_response_tps) || r.p50GenTps, 2)],
+    [() => 'prefill ' + t('unitTokS'), (r) => num(Number(r.summary.avg_prompt_tps) || 0, 0)],
+    [() => t('maxParallel'), (r) => int(r.maxConc)],
+    [() => t('idle'), (r) => num(((r.wall - r.busy) / r.wall) * 100, 1) + ' %'],
+    [() => t('responseTokens'), (r) => int(r.totGen)],
   ];
   $('#tblCompare').innerHTML =
-    '<thead><tr>' + cols.map(([t]) => `<th>${t}</th>`).join('') + '</tr></thead><tbody>' +
+    '<thead><tr>' + cols.map(([titleFn]) => `<th>${typeof titleFn === 'function' ? titleFn() : titleFn}</th>`).join('') + '</tr></thead><tbody>' +
     S.runs.map((r, i) => `<tr class="${i === S.active ? 'active' : ''}" data-i="${i}">` +
       cols.map(([, f]) => `<td>${f(r)}</td>`).join('') + '</tr>').join('') + '</tbody>';
   $('#tblCompare').querySelectorAll('tbody tr').forEach((tr) => (tr.onclick = () => setActive(+tr.dataset.i, true))); // keepView = true
 }
 
 function renderLegends() {
-  const item = (c, t) => `<span><i style="background:${c}"></i>${t}</span>`;
+  const item = (c, txt) => `<span><i style="background:${c}"></i>${txt}</span>`;
+  const phases = PHASE_NAMES();
   $('#legendMain').innerHTML =
-    item(CLR.load, 'загрузка модели') + item(CLR.pre, 'обработка промпта (prefill)') +
-    item(CLR.gen, 'генерация ответа') + item(CLR.ovh, 'накладные расходы (сеть, очередь)') +
-    item(CLR.cur, 'курсор / окно') +
-    '<span class="hint">ось X — время от старта запуска; в каждом пикселе показан максимум, ' +
-    'поэтому короткие всплески не теряются</span>';
-  $('#legendMini').innerHTML = item(CLR.pre + '99', 'активных запросов') + item(CLR.gen, 'суммарно ток/с');
+    item(CLR.load, phases.load) + item(CLR.pre, t('legendPrefill')) +
+    item(CLR.gen, t('legendGeneration')) + item(CLR.ovh, t('legendOverhead')) +
+    item(CLR.cur, t('legendCursor')) +
+    '<span class="hint">' + t('legendHint') + '</span>';
+  $('#legendMini').innerHTML = item(CLR.pre + '99', t('activeRequests')) + item(CLR.gen, t('totalTps'));
 }
 
 function updateHeads(r) {
-  const t = S.cursor, w = windowStats(r);
+  const cur = S.cursor, w = windowStats(r);
   const set = (k, v) => { const el = document.querySelector(`[data-val="${k}"]`); if (el) el.textContent = v; };
-  if (t === null) {
-    set('gantt', `${int(w.active)} запросов в окне · ${int(w.started)} стартовало · ${int(w.finished)} завершилось`);
-    set('conc', `в окне: сред. ${num(w.avgConc, 2)} · макс ${int(w.maxConc)} · простой ${num((w.idle / (w.sp || 1)) * 100, 1)} %`);
-    set('thr', `в окне: ${num(w.aggTps, 1)} ток/с · ${int(w.gTok)} токенов`);
-    set('rtps', `в окне: ${num(w.perReqTps, 2)} ток/с на запрос`);
-    set('pre', `в окне: ${int(w.pTok)} токенов промпта за ${fmtDur(w.preTime)}`);
+  if (cur === null) {
+    set('gantt', `${int(w.active)} ${t('requestsInWindow')} · ${int(w.started)} ${t('started')} · ${int(w.finished)} ${t('finished')}`);
+    set('conc', `${t('inWindow')}: ${t('unitAvg')}. ${num(w.avgConc, 2)} · ${t('unitMax')} ${int(w.maxConc)} · ${t('idle')} ${num((w.idle / (w.sp || 1)) * 100, 1)} %`);
+    set('thr', `${t('inWindow')}: ${num(w.aggTps, 1)} ${t('unitTokS')} · ${int(w.gTok)} ${t('tokens')}`);
+    set('rtps', `${t('inWindow')}: ${num(w.perReqTps, 2)} ${t('unitTokS')} ${t('perRequest')}`);
+    set('pre', `${t('inWindow')}: ${int(w.pTok)} ${t('tokens')} промпта за ${fmtDur(w.preTime)}`);
     
     // статистика для box plot графиков (для всех отчётов)
     const totalReports = S.runs.length;
-    set('gentps', `сравнение ${totalReports} отчёт${totalReports === 1 ? 'а' : totalReports < 5 ? 'ов' : 'ов'} по скорости генерации на запрос`);
-    set('partps', `сравнение ${totalReports} отчёт${totalReports === 1 ? 'а' : totalReports < 5 ? 'ов' : 'ов'} по суммарной параллельной генерации`);
-    set('perthr', `сравнение ${totalReports} отчёт${totalReports === 1 ? 'а' : totalReports < 5 ? 'ов' : 'ов'} по удельной скорости на поток`);
+    set('gentps', `${t('comparison')} ${totalReports} ${t('reports')} ${t('byGenSpeed')}`);
+    set('partps', `${t('comparison')} ${totalReports} ${t('reports')} ${t('byParallelGen')}`);
+    set('perthr', `${t('comparison')} ${totalReports} ${t('reports')} ${t('byPerThread')}`);
     return;
   }
   const c = { act: stepAt(r.bpConc, t, 'act'), gen: stepAt(r.bpConc, t, 'gen'), pre: stepAt(r.bpConc, t, 'pre'), load: stepAt(r.bpConc, t, 'load') };
@@ -1174,36 +1576,38 @@ function phaseOf(q, t) {
   return 'ovh';
 }
 function tipRow(k, v) { return `<div class="row"><span>${k}</span><span>${v}</span></div>`; }
-function tooltipHTML(r, t, q) {
-  let h = `<b>${fmtTime(r, t, true)}</b> <span style="color:var(--muted)">${S.opts.abs ? '' : 'от старта'}</span>`;
+function tooltipHTML(r, tm, q) {
+  const phases = PHASE_NAMES();
+  let h = `<b>${fmtTime(r, tm, true)}</b> <span style="color:var(--muted)">${S.opts.abs ? '' : t('fromStart')}</span>`;
   if (q) {
-    const ph = phaseOf(q, t);
-    h += `<hr><b>Запрос #${q.i + 1}</b>` +
-      tipRow('фаза сейчас', ph ? `<span class="ph" style="background:${CLR[ph]}"></span>${PHASE_RU[ph]}` : '—') +
-      tipRow('старт → конец', `${fmtTime(r, q.s, true)} → ${fmtTime(r, q.e, true)}`) +
-      tipRow('длительность', fmtDur(q.dur)) +
-      tipRow('слот', q.lane + 1) +
-      tipRow('промпт', `${int(q.pl)} ток / ${fmtDur(q.pp)} = ${num(q.preTps, 0)} ток/с`) +
-      tipRow('ответ', `${int(q.rl)} ток / ${fmtDur(q.gen)} = ${num(q.genTps, 2)} ток/с`) +
-      tipRow('загрузка модели', fmtDur(q.load)) +
+    const ph = phaseOf(q, tm);
+    h += `<hr><b>${t('request')} #${q.i + 1}</b>` +
+      tipRow(t('phaseNow'), ph ? `<span class="ph" style="background:${CLR[ph]}"></span>${phases[ph]}` : '—') +
+      tipRow(t('startEnd'), `${fmtTime(r, q.s, true)} → ${fmtTime(r, q.e, true)}`) +
+      tipRow(t('duration'), fmtDur(q.dur)) +
+      tipRow(t('slot'), q.lane + 1) +
+      tipRow(t('prompt'), `${int(q.pl)} ток / ${fmtDur(q.pp)} = ${num(q.preTps, 0)} ${t('unitTokS')}`) +
+      tipRow(t('response'), `${int(q.rl)} ток / ${fmtDur(q.gen)} = ${num(q.genTps, 2)} ${t('unitTokS')}`) +
+      tipRow(t('modelLoad'), fmtDur(q.load)) +
       (q.ttft !== null ? tipRow('TTFT', fmtDur(q.ttft - q.s)) : '') +
-      tipRow('накладные', fmtDur(q.ovh)) +
-      (ph === 'gen' ? tipRow('сгенерировано к моменту', `${int(q.genTps * (t - q.gs))} / ${int(q.rl)} ток (${num(((t - q.gs) / (q.gen || 1)) * 100, 0)} %)`) : '');
+      tipRow(t('overhead'), fmtDur(q.ovh)) +
+      (ph === 'gen' ? tipRow(t('generatedSoFar'), `${int(q.genTps * (tm - q.gs))} / ${int(q.rl)} ток (${num(((tm - q.gs) / (q.gen || 1)) * 100, 0)} %)`) : '');
   }
-  const c = { act: stepAt(r.bpConc, t, 'act'), gen: stepAt(r.bpConc, t, 'gen'), pre: stepAt(r.bpConc, t, 'pre'), load: stepAt(r.bpConc, t, 'load') };
-  h += '<hr>' + tipRow('активных запросов', `<b>${int(c.act)}</b>${r.config.parallel_size ? ' / ' + int(r.config.parallel_size) : ''}`) +
-    tipRow('генерация / prefill / загрузка', `${int(c.gen)} / ${int(c.pre)} / ${int(c.load)}`) +
-    tipRow('суммарная генерация', `<b>${num(stepAt(r.bpRate, t, 'gen'), 1)}</b> ток/с`) +
-    (c.pre ? tipRow('суммарный prefill', num(stepAt(r.bpRate, t, 'pre'), 0) + ' ток/с') : '');
+  const c = { act: stepAt(r.bpConc, tm, 'act'), gen: stepAt(r.bpConc, tm, 'gen'), pre: stepAt(r.bpConc, tm, 'pre'), load: stepAt(r.bpConc, tm, 'load') };
+  h += '<hr>' + tipRow(t('activeRequests'), `<b>${int(c.act)}</b>${r.config.parallel_size ? ' / ' + int(r.config.parallel_size) : ''}`) +
+    tipRow(t('genPrefillLoad'), `${int(c.gen)} / ${int(c.pre)} / ${int(c.load)}`) +
+    tipRow(t('totalGeneration'), `<b>${num(stepAt(r.bpRate, tm, 'gen'), 1)}</b> ${t('unitTokS')}`) +
+    (c.pre ? tipRow(t('totalPrefill'), num(stepAt(r.bpRate, tm, 'pre'), 0) + ' ' + t('unitTokS')) : '');
 
-  const act = r.reqs.filter((x) => x.s <= t && t <= x.e).sort((a, b) => a.lane - b.lane);
+  const act = r.reqs.filter((x) => x.s <= tm && tm <= x.e).sort((a, b) => a.lane - b.lane);
   if (act.length) {
     h += '<hr><div class="list">';
+    const phases = PHASE_NAMES();
     for (const x of act.slice(0, 9)) {
-      const ph = phaseOf(x, t);
-      const prog = ph === 'gen' ? num(((t - x.gs) / (x.gen || 1)) * 100, 0) + ' %' : PHASE_RU[ph];
+      const ph = phaseOf(x, tm);
+      const prog = ph === 'gen' ? num(((tm - x.gs) / (x.gen || 1)) * 100, 0) + ' %' : phases[ph];
       h += tipRow(`<span class="ph" style="background:${CLR[ph]}"></span>#${x.i + 1}` + (x.i === (q && q.i) ? ' ◂' : ''),
-        `${prog} · ${num(x.genTps, 1)} ток/с`);
+        `${prog} · ${num(x.genTps, 1)} ${t('unitTokS')}`);
     }
     if (act.length > 9) h += `<div style="color:var(--muted)">…и ещё ${act.length - 9}</div>`;
     h += '</div>';
@@ -1229,11 +1633,11 @@ function placePop() {
   el.style.left = left + 'px'; el.style.top = top + 'px';
 }
 function showPop(key, anchor) {
-  const src = document.querySelector(`#helpTexts [data-help="${key}"]`);
+  const src = document.querySelector(`#helpTexts [data-help="${key}"][data-lang="${currentLang}"]`);
   const el = $('#pop');
   if (!src) { hidePop(); return; }
-  el.innerHTML = '<button class="pop-close" title="Закрыть">×</button>' + src.innerHTML +
-    '<span class="pop-hint">Esc или клик вне окна — закрыть. Свой «?» есть у каждого блока.</span>';
+  el.innerHTML = '<button class="pop-close" title="' + t('helpClose') + '">×</button>' + src.innerHTML +
+    '<span class="pop-hint">' + t('helpHint') + '</span>';
   el.classList.remove('hidden');
   document.querySelectorAll('.qm.on').forEach((b) => b.classList.remove('on'));
   anchor.classList.add('on');
@@ -1664,6 +2068,52 @@ document.querySelectorAll('.view-tab').forEach(tab => {
   tab.addEventListener('click', () => switchView(tab.dataset.view));
 });
 
+// локализация
+function applyLocalization() {
+  // применяем локализацию ко всем элементам с data-i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    el.textContent = t(key);
+  });
+  
+  // применяем локализацию к атрибутам title
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.dataset.i18nTitle;
+    el.title = t(key);
+  });
+  
+  // обновляем динамический контент
+  const r = run();
+  if (r) {
+    renderCards(r);
+    renderConfigTable(r);
+    renderWindowTable(r);
+    renderReqTable(r);
+    renderCompare();
+    if (S.activeView === 'summary') renderCompareSummary();
+    refresh();
+  }
+  
+  // обновляем открытое окно справки, если оно открыто
+  if (S.popAnchor && S.popAnchor.dataset.help) {
+    showPop(S.popAnchor.dataset.help, S.popAnchor);
+  }
+}
+
+function setLanguage(lang) {
+  if (!LANG[lang]) return;
+  currentLang = lang;
+  localStorage.setItem('llperf-lang', lang);
+  $('#langSelect').value = lang;
+  applyLocalization();
+}
+
+// обработчик переключателя языка
+$('#langSelect').value = currentLang;
+$('#langSelect').addEventListener('change', (e) => setLanguage(e.target.value));
+
+// применить локализацию при загрузке страницы
+applyLocalization();
 
 const bindOpt = (id, key, full) => $(id).addEventListener('change', (e) => {
   S.opts[key] = e.target.checked;
